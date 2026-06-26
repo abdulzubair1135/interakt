@@ -51,10 +51,5 @@ const postSchema = new mongoose.Schema({
 // TTL index to automatically delete posts after 27 hours
 postSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
 
-// Filter out posts older than 24 hours from all find queries
-postSchema.pre(/^find/, function(next) {
-  this.where({ createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } });
-  next();
-});
 
 module.exports = mongoose.model('Post', postSchema);

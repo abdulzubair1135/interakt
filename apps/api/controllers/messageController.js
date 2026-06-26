@@ -22,11 +22,13 @@ const populateSender = async (msgs) => {
 
 exports.getGlobalMessages = async (req, res) => {
   try {
-    let msgs = await Message.find({ isGlobal: true }).sort({ createdAt: 1 });
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    let msgs = await Message.find({ isGlobal: true, createdAt: { $gte: twentyFourHoursAgo } }).sort({ createdAt: 1 });
     msgs = msgs.slice(-50);
     msgs = await populateSender(msgs);
     res.status(200).json({ success: true, data: msgs });
   } catch (err) {
+    console.error('getGlobalMessages ERROR:', err);
     res.status(400).json({ success: false, error: err.message });
   }
 };
@@ -59,11 +61,13 @@ exports.getPersonalMessages = async (req, res) => {
       { $push: { viewedBy: userId } }
     );
 
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     let msgs = await Message.find({
       $or: [
         { sender: userId, receiver: recipientId },
         { sender: recipientId, receiver: userId }
-      ]
+      ],
+      createdAt: { $gte: twentyFourHoursAgo }
     }).sort({ createdAt: 1 });
 
     msgs = await populateSender(msgs);
@@ -116,7 +120,8 @@ exports.getGroupMessages = async (req, res) => {
       { $push: { viewedBy: userId } }
     );
 
-    let msgs = await Message.find({ group: req.params.groupId }).sort({ createdAt: 1 });
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    let msgs = await Message.find({ group: req.params.groupId, createdAt: { $gte: twentyFourHoursAgo } }).sort({ createdAt: 1 });
     msgs = await populateSender(msgs);
     res.status(200).json({ success: true, data: msgs });
   } catch (err) {
@@ -144,7 +149,8 @@ exports.sendGroupMessage = async (req, res) => {
 exports.getConversations = async (req, res) => {
   try {
     const userId = req.user.id;
-    const allMsgs = await Message.find().lean();
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const allMsgs = await Message.find({ createdAt: { $gte: twentyFourHoursAgo } }).lean();
     const allUsers = await User.find().lean();
     const allGroups = await Group.find().lean();
 

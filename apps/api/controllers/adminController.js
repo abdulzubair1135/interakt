@@ -4,6 +4,8 @@ const Report = require('../models/Report');
 const Ad = require('../models/Ad');
 const fs = require('fs');
 const path = require('path');
+const ActivityLog = require('../models/ActivityLog');
+const OtpRequest = require('../models/OtpRequest');
 
 // @desc    Get all users
 // @route   GET /api/admin/users
@@ -67,11 +69,7 @@ exports.deletePost = async (req, res) => {
 // @access  Private/Admin
 exports.getActivityLogs = async (req, res) => {
   try {
-    const logsFile = path.join(__dirname, '../data/activity_logs.json');
-    let logs = [];
-    if (fs.existsSync(logsFile)) {
-      logs = JSON.parse(fs.readFileSync(logsFile, 'utf8'));
-    }
+    const logs = await ActivityLog.find().sort({ timestamp: -1 }).lean();
     res.status(200).json({ success: true, count: logs.length, data: logs });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -83,13 +81,10 @@ exports.getActivityLogs = async (req, res) => {
 // @access  Private/Admin
 exports.getOtpRequests = async (req, res) => {
   try {
-    const otpFile = path.join(__dirname, '../data/otp_requests.json');
-    let requests = [];
-    if (fs.existsSync(otpFile)) {
-      requests = JSON.parse(fs.readFileSync(otpFile, 'utf8'));
-    }
-    const now = new Date();
-    const activeRequests = requests.filter(r => new Date(r.expiresAt) > now && !r.verified);
+    const activeRequests = await OtpRequest.find({
+      expiresAt: { $gt: new Date() },
+      verified: false
+    }).lean();
     res.status(200).json({ success: true, count: activeRequests.length, data: activeRequests });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

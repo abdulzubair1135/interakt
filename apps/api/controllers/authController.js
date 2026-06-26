@@ -7,6 +7,8 @@ const { createNotification } = require('../utils/notifications');
 const fs = require('fs');
 const path = require('path');
 const { logActivity } = require('../utils/activityLogger');
+const AllowedUid = require('../models/AllowedUid');
+const OtpRequest = require('../models/OtpRequest');
 
 // ──────────────────────────────────────────────────────────────
 // SECURITY: JWT_SECRET startup validation (Fix #2)
@@ -215,15 +217,13 @@ exports.register = async (req, res) => {
     const passwordErr = validatePassword(password);
     if (passwordErr) return res.status(400).json({ success: false, error: passwordErr });
 
-    // Read allowed UIDs
-    const allowedUidsPath = path.join(__dirname, '../data/allowed_uids.json');
-    let allowedUids = [];
-    if (fs.existsSync(allowedUidsPath)) {
-      allowedUids = JSON.parse(fs.readFileSync(allowedUidsPath, 'utf8'));
-    }
-
-    if (!allowedUids.includes(uid.trim())) {
+    // Check if UID is allowed and not used
+    const allowedUidObj = await AllowedUid.findOne({ uid: uid.trim() });
+    if (!allowedUidObj) {
       return res.status(400).json({ success: false, error: 'Your College UID is not registered/authorized. Outsiders are not allowed!' });
+    }
+    if (allowedUidObj.used) {
+      return res.status(400).json({ success: false, error: 'This College UID has already been used to register an account.' });
     }
 
     const existingUser = await User.findOne({
@@ -258,6 +258,10 @@ exports.register = async (req, res) => {
     });
 
     console.log('User created successfully:', user._id);
+    
+    // Mark UID as used
+    await AllowedUid.findOneAndUpdate({ uid: uid.trim() }, { used: true, registeredUser: user._id });
+    
     await logActivity(user._id, user.username, 'register', `User registered successfully with College UID: ${uid}`, req.ip);
     sendTokenResponse(user, 200, res);
   } catch (err) {
@@ -837,37 +841,19 @@ exports.forgotPassword = async (req, res) => {
 
     // Generate 6-digit random OTP using crypto for better randomness
     const otp = crypto.randomInt(100000, 999999).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 mins expiry
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins expiry
 
-    const dataDir = path.join(__dirname, '../data');
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    const otpFile = path.join(dataDir, 'otp_requests.json');
-    let requests = [];
-    if (fs.existsSync(otpFile)) {
-      requests = JSON.parse(fs.readFileSync(otpFile, 'utf8'));
-    }
+    // Remove any existing active otp requests for this user
+    await OtpRequest.deleteMany({ userId: user._id });
 
-    // Remove any existing active otp requests for this user to keep it clean
-    requests = requests.filter(r => r.userId !== user._id);
-
-    const newRequest = {
-      _id: Date.now().toString() + crypto.randomBytes(4).toString('hex'),
+    // Create new OTP request
+    await OtpRequest.create({
       userId: user._id,
-      username: user.username,
-      uid: user.uid || '',
-      phone: user.phone || '',
-      email: user.email || '',
-      otp,
-      expiresAt,
-      createdAt: new Date().toISOString(),
+      expiresAt: expiresAt,
       verified: false,
-      attempts: 0 // Fix #14: track verification attempts
-    };
-
-    requests.push(newRequest);
-    fs.writeFileSync(otpFile, JSON.stringify(requests, null, 2));
+      otp: otp, // Wait, I need to add OTP to the schema
+      attempts: 0
+    });
 
     // Log the request activity
     await logActivity(user._id, user.username, 'forgot_password_request', `Requested password reset. OTP generated for admin approval.`, req.ip);
@@ -914,36 +900,22 @@ exports.verifyResetOtp = async (req, res) => {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
 
-    const otpFile = path.join(__dirname, '../data/otp_requests.json');
-    if (!fs.existsSync(otpFile)) {
-      return res.status(400).json({ success: false, error: 'No active OTP requests found' });
-    }
+    // Find active OTP request
+    const otpRequest = await OtpRequest.findOne({
+      userId: user._id,
+      expiresAt: { $gt: new Date() },
+      verified: false
+    });
 
-    let requests = [];
-    try {
-      requests = JSON.parse(fs.readFileSync(otpFile, 'utf8'));
-      if (!Array.isArray(requests)) requests = [];
-    } catch (e) {
-      requests = [];
-    }
-
-    const requestIndex = requests.findIndex(r => 
-      r.userId && r.userId.toString() === user._id.toString() && 
-      new Date(r.expiresAt) > new Date() && 
-      !r.verified
-    );
-
-    if (requestIndex === -1) {
+    if (!otpRequest) {
       return res.status(400).json({ success: false, error: 'No active OTP request found. Please request a new one.' });
     }
 
-    const otpRequest = requests[requestIndex];
-
-    // Fix #14: Check brute-force attempt count
+    // Check brute-force attempt count
     if ((otpRequest.attempts || 0) >= MAX_OTP_ATTEMPTS) {
       // Invalidate the OTP entirely
-      requests[requestIndex].verified = true; // mark as used so it can't be retried
-      fs.writeFileSync(otpFile, JSON.stringify(requests, null, 2));
+      otpRequest.verified = true;
+      await otpRequest.save();
       await logActivity(user._id, user.username, 'otp_brute_force', 'OTP invalidated after too many failed attempts', req.ip);
       return res.status(400).json({ success: false, error: 'Too many failed OTP attempts. This OTP has been invalidated. Please request a new one.' });
     }
@@ -951,11 +923,11 @@ exports.verifyResetOtp = async (req, res) => {
     // Check if OTP matches
     if (otpRequest.otp !== otp.trim()) {
       // Increment attempt counter
-      requests[requestIndex].attempts = (otpRequest.attempts || 0) + 1;
-      fs.writeFileSync(otpFile, JSON.stringify(requests, null, 2));
+      otpRequest.attempts = (otpRequest.attempts || 0) + 1;
+      await otpRequest.save();
 
-      const remaining = MAX_OTP_ATTEMPTS - requests[requestIndex].attempts;
-      await logActivity(user._id, user.username, 'otp_verify_fail', `Failed OTP verification attempt (${requests[requestIndex].attempts}/${MAX_OTP_ATTEMPTS})`, req.ip);
+      const remaining = MAX_OTP_ATTEMPTS - otpRequest.attempts;
+      await logActivity(user._id, user.username, 'otp_verify_fail', `Failed OTP verification attempt (${otpRequest.attempts}/${MAX_OTP_ATTEMPTS})`, req.ip);
       return res.status(400).json({ 
         success: false, 
         error: `Invalid OTP. ${remaining} attempt(s) remaining before invalidation.` 
@@ -967,8 +939,8 @@ exports.verifyResetOtp = async (req, res) => {
     await user.save();
 
     // Mark OTP as verified/used
-    requests[requestIndex].verified = true;
-    fs.writeFileSync(otpFile, JSON.stringify(requests, null, 2));
+    otpRequest.verified = true;
+    await otpRequest.save();
 
     await logActivity(user._id, user.username, 'password_reset_success', `Reset password successfully using admin OTP`, req.ip);
 

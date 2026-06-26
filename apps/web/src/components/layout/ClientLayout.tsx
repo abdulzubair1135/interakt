@@ -51,7 +51,7 @@ export default function ClientLayout({
       } catch (e) {}
 
       const axios = require("axios");
-      axios.post("http://localhost:5005/api/auth/log-inspect", {
+      axios.post("https://interakt-api.onrender.com/api/auth/log-inspect", {
         username,
         details: `Inspect attempt detected via: ${method}`
       }).catch(() => {});

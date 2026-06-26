@@ -101,7 +101,7 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const token = localStorage.getItem('campushub_token');
-      const res = await axios.get('http://localhost:5005/api/admin/users', {
+      const res = await axios.get('https://interakt-api.onrender.com/api/admin/users', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(res.data.data);
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
     setLogsLoading(true);
     try {
       const token = localStorage.getItem('campushub_token');
-      const res = await axios.get('http://localhost:5005/api/admin/logs', {
+      const res = await axios.get('https://interakt-api.onrender.com/api/admin/logs', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setLogs(res.data.data);
@@ -131,7 +131,7 @@ export default function AdminDashboard() {
     setOtpLoading(true);
     try {
       const token = localStorage.getItem('campushub_token');
-      const res = await axios.get('http://localhost:5005/api/admin/otp-requests', {
+      const res = await axios.get('https://interakt-api.onrender.com/api/admin/otp-requests', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setOtpRequests(res.data.data);
@@ -146,7 +146,7 @@ export default function AdminDashboard() {
     setReportsLoading(true);
     try {
       const token = localStorage.getItem('campushub_token');
-      const res = await axios.get('http://localhost:5005/api/admin/reports', {
+      const res = await axios.get('https://interakt-api.onrender.com/api/admin/reports', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setReports(res.data.data);
@@ -161,7 +161,7 @@ export default function AdminDashboard() {
     setAdsLoading(true);
     try {
       const token = localStorage.getItem('campushub_token');
-      const res = await axios.get('http://localhost:5005/api/admin/ads/stats', {
+      const res = await axios.get('https://interakt-api.onrender.com/api/admin/ads/stats', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAds(res.data.data);
@@ -175,7 +175,7 @@ export default function AdminDashboard() {
   const fetchPosts = async () => {
     setPostsLoading(true);
     try {
-      const res = await axios.get('http://localhost:5005/api/posts');
+      const res = await axios.get('https://interakt-api.onrender.com/api/posts');
       setPosts(res.data.data);
     } catch (e) {
       console.error(e);
@@ -187,7 +187,7 @@ export default function AdminDashboard() {
   const handleBanUser = async (userId: string, duration: string) => {
     try {
       const token = localStorage.getItem('campushub_token');
-      await axios.post(`http://localhost:5005/api/admin/users/${userId}/ban`, { duration }, {
+      await axios.post(`https://interakt-api.onrender.com/api/admin/users/${userId}/ban`, { duration }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchUsers();
@@ -200,7 +200,7 @@ export default function AdminDashboard() {
   const handleSetPremium = async (userId: string, duration: string) => {
     try {
       const token = localStorage.getItem('campushub_token');
-      await axios.put(`http://localhost:5005/api/auth/${userId}/premium`, { duration }, {
+      await axios.put(`https://interakt-api.onrender.com/api/auth/${userId}/premium`, { duration }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchUsers();
@@ -214,7 +214,7 @@ export default function AdminDashboard() {
     if (!confirm('BAN & Delete this user entirely?')) return;
     try {
       const token = localStorage.getItem('campushub_token');
-      await axios.delete(`http://localhost:5005/api/admin/users/${id}`, {
+      await axios.delete(`https://interakt-api.onrender.com/api/admin/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchUsers();
@@ -228,7 +228,7 @@ export default function AdminDashboard() {
     if (!confirm('Are you sure you want to delete this post?')) return;
     try {
       const token = localStorage.getItem('campushub_token');
-      await axios.delete(`http://localhost:5005/api/admin/posts/${id}`, {
+      await axios.delete(`https://interakt-api.onrender.com/api/admin/posts/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchPosts();
@@ -241,7 +241,7 @@ export default function AdminDashboard() {
   const handleDeleteReport = async (id: string) => {
     try {
       const token = localStorage.getItem('campushub_token');
-      await axios.delete(`http://localhost:5005/api/admin/reports/${id}`, {
+      await axios.delete(`https://interakt-api.onrender.com/api/admin/reports/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchReports();
@@ -254,7 +254,7 @@ export default function AdminDashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('campushub_token');
-      await axios.post('http://localhost:5005/api/admin/ads', newAd, {
+      await axios.post('https://interakt-api.onrender.com/api/admin/ads', newAd, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNewAd({ company: '', title: '', description: '', image: '', link: '' });
@@ -271,7 +271,7 @@ export default function AdminDashboard() {
     if (!confirm('Delete this advertisement banner?')) return;
     try {
       const token = localStorage.getItem('campushub_token');
-      await axios.delete(`http://localhost:5005/api/admin/ads/${id}`, {
+      await axios.delete(`https://interakt-api.onrender.com/api/admin/ads/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchAds();

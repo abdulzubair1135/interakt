@@ -32,7 +32,7 @@ export default function Home() {
     try {
       const params: any = {};
       if (activeFilter !== 'all') params.tag = activeFilter;
-      const res = await axios.get('http://localhost:5005/api/posts', { params });
+      const res = await axios.get('https://interakt-api.onrender.com/api/posts', { params });
       setPosts(res.data.data);
     } catch (error) {
       console.error('Error fetching posts:', error);
@@ -61,7 +61,7 @@ export default function Home() {
         const base64String = reader.result as string;
         const token = localStorage.getItem('campushub_token');
         const res = await axios.post(
-          'http://localhost:5005/api/posts/upload',
+          'https://interakt-api.onrender.com/api/posts/upload',
           { base64: base64String },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -86,7 +86,7 @@ export default function Home() {
     try {
       const token = localStorage.getItem('campushub_token');
       await axios.post(
-        'http://localhost:5005/api/posts',
+        'https://interakt-api.onrender.com/api/posts',
         { text: postText, media: postMedia || undefined, category: selectedTag, tags: [selectedTag] },
         { headers: { Authorization: `Bearer ${token}` } }
       );

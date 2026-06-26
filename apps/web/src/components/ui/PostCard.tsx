@@ -51,7 +51,7 @@ const PostCard = ({ id, author, avatar, time, content, image, likes: initialLike
 
     try {
       const token = localStorage.getItem('campushub_token');
-      const res = await axios.put(`http://localhost:5005/api/posts/${id}/like`, {}, {
+      const res = await axios.put(`https://interakt-api.onrender.com/api/posts/${id}/like`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setIsLiked(res.data.liked);
@@ -70,7 +70,7 @@ const PostCard = ({ id, author, avatar, time, content, image, likes: initialLike
     setIsSaved(newSaved);
     try {
       const token = localStorage.getItem('campushub_token');
-      const res = await axios.put(`http://localhost:5005/api/posts/${id}/save`, {}, {
+      const res = await axios.put(`https://interakt-api.onrender.com/api/posts/${id}/save`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setIsSaved(res.data.saved);
@@ -108,8 +108,8 @@ const PostCard = ({ id, author, avatar, time, content, image, likes: initialLike
     try {
       const token = localStorage.getItem('campushub_token');
       const deleteUrl = user?.role === 'admin'
-        ? `http://localhost:5005/api/admin/posts/${id}`
-        : `http://localhost:5005/api/posts/${id}`;
+        ? `https://interakt-api.onrender.com/api/admin/posts/${id}`
+        : `https://interakt-api.onrender.com/api/posts/${id}`;
       
       await axios.delete(deleteUrl, {
         headers: { Authorization: `Bearer ${token}` }

@@ -42,7 +42,7 @@ export default function Profile() {
           return;
         }
 
-        const meRes = await axios.get('http://localhost:5005/api/auth/me', {
+        const meRes = await axios.get('https://interakt-api.onrender.com/api/auth/me', {
           headers: { Authorization: `Bearer ${token}` }
         });
         const userData = meRes.data.data;
@@ -58,9 +58,9 @@ export default function Profile() {
         });
 
         setPostsLoading(true);
-        let postsUrl = `http://localhost:5005/api/posts/user/${userData._id}`;
-        if (activeTab === 'liked') postsUrl = 'http://localhost:5005/api/posts/liked';
-        else if (activeTab === 'saved') postsUrl = 'http://localhost:5005/api/posts/saved';
+        let postsUrl = `https://interakt-api.onrender.com/api/posts/user/${userData._id}`;
+        if (activeTab === 'liked') postsUrl = 'https://interakt-api.onrender.com/api/posts/liked';
+        else if (activeTab === 'saved') postsUrl = 'https://interakt-api.onrender.com/api/posts/saved';
 
         const postsRes = await axios.get(postsUrl, {
           headers: { Authorization: `Bearer ${token}` }
@@ -87,7 +87,7 @@ export default function Profile() {
     try {
       setUpdateLoading(true);
       const token = localStorage.getItem('campushub_token');
-      const res = await axios.put('http://localhost:5005/api/auth/updatedetails', editForm, {
+      const res = await axios.put('https://interakt-api.onrender.com/api/auth/updatedetails', editForm, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProfile(res.data.data);

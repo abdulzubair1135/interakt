@@ -37,19 +37,19 @@ function MessagesContent() {
   }, [messages]);
 
   useEffect(() => {
-    socket = io('http://localhost:5005');
+    socket = io('https://interakt-api.onrender.com');
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('campushub_token');
         if (!token) return;
 
-        const meRes = await axios.get('http://localhost:5005/api/auth/me', {
+        const meRes = await axios.get('https://interakt-api.onrender.com/api/auth/me', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setCurrentUser(meRes.data.data);
 
         // Fetch conversations (Direct Messages + Groups)
-        const convRes = await axios.get('http://localhost:5005/api/messages/conversations', {
+        const convRes = await axios.get('https://interakt-api.onrender.com/api/messages/conversations', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setChats([
@@ -58,14 +58,14 @@ function MessagesContent() {
         ]);
 
         // Fetch following users for group members selection
-        const followingRes = await axios.get('http://localhost:5005/api/auth/following', {
+        const followingRes = await axios.get('https://interakt-api.onrender.com/api/auth/following', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setFollowing(followingRes.data.data);
 
         // Handle URL query to open personal chat automatically
         if (userIdFromQuery) {
-          const userRes = await axios.get(`http://localhost:5005/api/auth/profile/${userIdFromQuery}`, {
+          const userRes = await axios.get(`https://interakt-api.onrender.com/api/auth/profile/${userIdFromQuery}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const targetUser = userRes.data.data;
@@ -135,11 +135,11 @@ function MessagesContent() {
       setLoading(true);
       try {
         const token = localStorage.getItem('campushub_token');
-        let msgUrl = 'http://localhost:5005/api/messages/global';
+        let msgUrl = 'https://interakt-api.onrender.com/api/messages/global';
         if (!activeChat.isGlobal) {
           msgUrl = activeChat.isGroup 
-            ? `http://localhost:5005/api/messages/group/${activeChat.id}`
-            : `http://localhost:5005/api/messages/personal/${activeChat.id}`;
+            ? `https://interakt-api.onrender.com/api/messages/group/${activeChat.id}`
+            : `https://interakt-api.onrender.com/api/messages/personal/${activeChat.id}`;
         }
 
         const res = await axios.get(msgUrl, {
@@ -182,7 +182,7 @@ function MessagesContent() {
 
   const searchPublicUsers = async () => {
     try {
-      const res = await axios.get(`http://localhost:5005/api/auth/search?q=${memberSearchQuery}`);
+      const res = await axios.get(`https://interakt-api.onrender.com/api/auth/search?q=${memberSearchQuery}`);
       setSearchResults(res.data.data);
     } catch (err) {
       console.error(err);
@@ -198,11 +198,11 @@ function MessagesContent() {
 
     try {
       const token = localStorage.getItem('campushub_token');
-      let url = 'http://localhost:5005/api/messages/global';
+      let url = 'https://interakt-api.onrender.com/api/messages/global';
       if (!activeChat.isGlobal) {
         url = activeChat.isGroup 
-          ? `http://localhost:5005/api/messages/group/${activeChat.id}`
-          : `http://localhost:5005/api/messages/personal/${activeChat.id}`;
+          ? `https://interakt-api.onrender.com/api/messages/group/${activeChat.id}`
+          : `https://interakt-api.onrender.com/api/messages/personal/${activeChat.id}`;
       }
 
       const res = await axios.post(url, 
@@ -244,7 +244,7 @@ function MessagesContent() {
     }
     try {
       const token = localStorage.getItem('campushub_token');
-      const res = await axios.post('http://localhost:5005/api/messages/group', {
+      const res = await axios.post('https://interakt-api.onrender.com/api/messages/group', {
         name: newGroupName,
         description: newGroupDesc,
         members: selectedMembers
@@ -278,7 +278,7 @@ function MessagesContent() {
     if (!confirm('Are you sure you want to delete this message?')) return;
     try {
       const token = localStorage.getItem('campushub_token');
-      await axios.delete(`http://localhost:5005/api/messages/${messageId}`, {
+      await axios.delete(`https://interakt-api.onrender.com/api/messages/${messageId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMessages(prev => prev.filter(m => m._id !== messageId));
@@ -294,7 +294,7 @@ function MessagesContent() {
     if (!reason || !reason.trim()) return;
     try {
       const token = localStorage.getItem('campushub_token');
-      await axios.post(`http://localhost:5005/api/messages/${messageId}/report`, { reason }, {
+      await axios.post(`https://interakt-api.onrender.com/api/messages/${messageId}/report`, { reason }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('Message reported successfully. The Admin will review it shortly.');

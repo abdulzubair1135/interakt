@@ -30,14 +30,14 @@ export default function UserProfile() {
       try {
         const token = localStorage.getItem('campushub_token');
         
-        const profileRes = await axios.get(`http://localhost:5005/api/auth/profile/${id}`);
+        const profileRes = await axios.get(`https://interakt-api.onrender.com/api/auth/profile/${id}`);
         setProfile(profileRes.data.data);
 
-        const postsRes = await axios.get(`http://localhost:5005/api/posts/user/${id}`);
+        const postsRes = await axios.get(`https://interakt-api.onrender.com/api/posts/user/${id}`);
         setPosts(postsRes.data.data);
 
         if (token) {
-          const meRes = await axios.get('http://localhost:5005/api/auth/me', {
+          const meRes = await axios.get('https://interakt-api.onrender.com/api/auth/me', {
             headers: { Authorization: `Bearer ${token}` }
           });
           setCurrentUser(meRes.data.data);
@@ -67,7 +67,7 @@ export default function UserProfile() {
       const token = localStorage.getItem('campushub_token');
       if (!token) return router.push('/login');
 
-      const res = await axios.put(`http://localhost:5005/api/auth/${id}/follow`, {}, {
+      const res = await axios.put(`https://interakt-api.onrender.com/api/auth/${id}/follow`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

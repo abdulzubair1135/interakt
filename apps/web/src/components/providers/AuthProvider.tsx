@@ -47,7 +47,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     }
 
     try {
-      const res = await axios.get("http://localhost:5005/api/auth/me", {
+      const res = await axios.get("https://interakt-api.onrender.com/api/auth/me", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUser(res.data.data);

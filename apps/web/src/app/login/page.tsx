@@ -29,7 +29,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5005/api/auth/login', {
+      const res = await axios.post('https://interakt-api.onrender.com/api/auth/login', {
         identifier: identifier.trim(),
         password
       });
@@ -51,7 +51,7 @@ export default function Login() {
     setForgotLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5005/api/auth/forgot-password', {
+      const res = await axios.post('https://interakt-api.onrender.com/api/auth/forgot-password', {
         identifier: forgotIdentifier.trim()
       });
       setForgotSuccess(res.data.message);
@@ -70,7 +70,7 @@ export default function Login() {
     setForgotLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5005/api/auth/verify-reset-otp', {
+      const res = await axios.post('https://interakt-api.onrender.com/api/auth/verify-reset-otp', {
         identifier: forgotIdentifier.trim(),
         otp: forgotOtp.trim(),
         newPassword: forgotNewPassword

@@ -72,7 +72,7 @@ const RightSidebar = ({ isOpen, onClose, onSwitchToLeft }: RightSidebarProps) =>
 
   const fetchTrendingUsers = async () => {
     try {
-      const res = await axios.get('http://localhost:5005/api/auth/trending');
+      const res = await axios.get('https://interakt-api.onrender.com/api/auth/trending');
       setTrendingUsers(res.data.data);
     } catch (err) {
       setTrendingUsers([
@@ -87,8 +87,8 @@ const RightSidebar = ({ isOpen, onClose, onSwitchToLeft }: RightSidebarProps) =>
     try {
       setSearchLoading(true);
       const [usersRes, postsRes] = await Promise.all([
-        axios.get(`http://localhost:5005/api/auth/search?q=${query}`),
-        axios.get(`http://localhost:5005/api/posts/search?q=${query}`),
+        axios.get(`https://interakt-api.onrender.com/api/auth/search?q=${query}`),
+        axios.get(`https://interakt-api.onrender.com/api/posts/search?q=${query}`),
       ]);
       const users = usersRes.data.data.map((u: any) => ({ ...u, _type: 'user' }));
       const posts = postsRes.data.data.slice(0, 3).map((p: any) => ({ ...p, _type: 'post' }));

@@ -14,13 +14,13 @@ export default function Notifications() {
         const token = localStorage.getItem('campushub_token');
         if (!token) return;
 
-        const res = await axios.get('http://localhost:5005/api/auth/notifications', {
+        const res = await axios.get('https://interakt-api.onrender.com/api/auth/notifications', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setNotifications(res.data.data);
 
         // Mark as read
-        await axios.put('http://localhost:5005/api/auth/notifications/read', {}, {
+        await axios.put('https://interakt-api.onrender.com/api/auth/notifications/read', {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } catch (error) {

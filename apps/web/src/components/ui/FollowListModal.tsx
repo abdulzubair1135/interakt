@@ -23,7 +23,7 @@ export default function FollowListModal({ isOpen, onClose, userId, type, title }
       const fetchUsers = async () => {
         setLoading(true);
         try {
-          const res = await axios.get(`http://localhost:5005/api/auth/profile/${userId}/${type}`);
+          const res = await axios.get(`https://interakt-api.onrender.com/api/auth/profile/${userId}/${type}`);
           setUsers(res.data.data);
         } catch (err) {
           console.error(err);

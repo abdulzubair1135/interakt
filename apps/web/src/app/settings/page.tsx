@@ -30,7 +30,7 @@ export default function Settings() {
     try {
       const token = localStorage.getItem('campushub_token');
       if (!token) return;
-      const res = await axios.get('http://localhost:5005/api/auth/me', {
+      const res = await axios.get('https://interakt-api.onrender.com/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUser(res.data.data);
@@ -56,7 +56,7 @@ export default function Settings() {
     try {
       setLoading(true);
       const token = localStorage.getItem('campushub_token');
-      const res = await axios.put('http://localhost:5005/api/auth/toggleprivate', { isPrivate: !isPrivate }, {
+      const res = await axios.put('https://interakt-api.onrender.com/api/auth/toggleprivate', { isPrivate: !isPrivate }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setIsPrivate(res.data.isPrivate);
@@ -79,7 +79,7 @@ export default function Settings() {
     try {
       setLoading(true);
       const token = localStorage.getItem('campushub_token');
-      await axios.put('http://localhost:5005/api/auth/changepassword', {
+      await axios.put('https://interakt-api.onrender.com/api/auth/changepassword', {
         currentPassword: passwords.current,
         newPassword: passwords.new
       }, {

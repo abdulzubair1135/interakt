@@ -19,11 +19,11 @@ export default function PostDetail() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const postRes = await axios.get(`http://localhost:5005/api/posts/${params.id}`);
+        const postRes = await axios.get(`https://interakt-api.onrender.com/api/posts/${params.id}`);
         setPost(postRes.data.data);
 
         // Fetch comments using the correct endpoint
-        const commentsRes = await axios.get(`http://localhost:5005/api/comments/${params.id}`);
+        const commentsRes = await axios.get(`https://interakt-api.onrender.com/api/comments/${params.id}`);
         setComments(commentsRes.data.data);
       } catch (error) {
         console.error('Error fetching post detail:', error);
@@ -43,7 +43,7 @@ export default function PostDetail() {
     try {
       const token = localStorage.getItem('campushub_token');
       // Correct endpoint for adding a comment
-      const res = await axios.post(`http://localhost:5005/api/comments/${params.id}`, 
+      const res = await axios.post(`https://interakt-api.onrender.com/api/comments/${params.id}`, 
         { text: commentText },
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -17,8 +17,8 @@ export default function Explore() {
       try {
         setLoading(true);
         const url = tag 
-          ? `http://localhost:5005/api/posts/search?q=${tag}`
-          : 'http://localhost:5005/api/posts';
+          ? `https://interakt-api.onrender.com/api/posts/search?q=${tag}`
+          : 'https://interakt-api.onrender.com/api/posts';
         
         const res = await axios.get(url);
         setPosts(res.data.data);

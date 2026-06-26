@@ -70,8 +70,11 @@ export default function ClientLayout({
       }
     };
 
-    let resizeThreshold = 160;
+    let resizeThreshold = 250;
     const handleResize = () => {
+      // Ignore mobile devices entirely for resize detection to prevent keyboard triggering it
+      if (window.innerWidth <= 768) return;
+
       const widthDiff = window.outerWidth - window.innerWidth;
       const heightDiff = window.outerHeight - window.innerHeight;
       

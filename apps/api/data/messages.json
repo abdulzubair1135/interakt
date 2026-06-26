@@ -1,0 +1,111 @@
+[
+  {
+    "_id": "1782463252930a990t",
+    "createdAt": "2026-06-26T08:40:52.930Z",
+    "updatedAt": "2026-06-26T08:40:52.930Z",
+    "text": "hiii",
+    "sender": "1782462964381us9nt",
+    "isGlobal": true
+  },
+  {
+    "_id": "1782463380241ne6xp",
+    "createdAt": "2026-06-26T08:43:00.241Z",
+    "updatedAt": "2026-06-26T08:43:00.241Z",
+    "text": "hello",
+    "sender": "1782459320852x22lw",
+    "isGlobal": true
+  },
+  {
+    "_id": "1782463395925psdzp",
+    "createdAt": "2026-06-26T08:43:15.925Z",
+    "updatedAt": "2026-06-26T08:43:15.925Z",
+    "text": "hiii",
+    "sender": "1782459320852x22lw",
+    "recipient": "1782462964381us9nt",
+    "isGlobal": false
+  },
+  {
+    "_id": "1782463437465ll7r7",
+    "createdAt": "2026-06-26T08:43:57.465Z",
+    "updatedAt": "2026-06-26T08:43:57.465Z",
+    "text": "where are u??",
+    "sender": "1782459320852x22lw",
+    "recipient": "1782462964381us9nt",
+    "isGlobal": false
+  },
+  {
+    "_id": "1782464439816zuys3",
+    "createdAt": "2026-06-26T09:00:39.816Z",
+    "updatedAt": "2026-06-26T09:00:39.816Z",
+    "text": "hiii",
+    "sender": "1782462964381us9nt",
+    "recipient": "1782459320852x22lw",
+    "isGlobal": false
+  },
+  {
+    "_id": "1782464585588wdvfq",
+    "createdAt": "2026-06-26T09:03:05.588Z",
+    "updatedAt": "2026-06-26T09:03:05.588Z",
+    "text": "heyyyyyy",
+    "sender": "1782462964381us9nt",
+    "groupId": "1782464579735fiodk",
+    "isGlobal": false
+  },
+  {
+    "_id": "178246610193524q8u",
+    "createdAt": "2026-06-26T09:28:21.935Z",
+    "updatedAt": "2026-06-26T09:28:21.935Z",
+    "text": "heyy",
+    "sender": "1782462964381us9nt",
+    "isGlobal": true
+  },
+  {
+    "_id": "1782466118625bl0xy",
+    "createdAt": "2026-06-26T09:28:38.625Z",
+    "updatedAt": "2026-06-26T09:28:38.625Z",
+    "text": "hii",
+    "sender": "1782462964381us9nt",
+    "isGlobal": true
+  },
+  {
+    "_id": "1782466462092c24tk",
+    "createdAt": "2026-06-26T09:34:22.092Z",
+    "updatedAt": "2026-06-26T09:34:22.092Z",
+    "text": "heyy",
+    "sender": "1782456782373s0foj",
+    "recipient": "1782459320852x22lw",
+    "isGlobal": false
+  },
+  {
+    "_id": "1782466470759z0anv",
+    "createdAt": "2026-06-26T09:34:30.759Z",
+    "updatedAt": "2026-06-26T09:34:30.759Z",
+    "text": "helo",
+    "sender": "1782456782373s0foj",
+    "isGlobal": true
+  },
+  {
+    "_id": "1782468043093d25c8",
+    "createdAt": "2026-06-26T10:00:43.093Z",
+    "updatedAt": "2026-06-26T10:00:43.093Z",
+    "text": "hii admin",
+    "sender": "1782468021507ttzxp",
+    "recipient": "1782456782373s0foj",
+    "isGlobal": false,
+    "viewedBy": [
+      "1782456782373s0foj"
+    ]
+  },
+  {
+    "_id": "17824680876305aw3l",
+    "createdAt": "2026-06-26T10:01:27.630Z",
+    "updatedAt": "2026-06-26T10:01:27.630Z",
+    "text": "helooo",
+    "sender": "1782456782373s0foj",
+    "recipient": "1782468021507ttzxp",
+    "isGlobal": false,
+    "viewedBy": [
+      "1782468021507ttzxp"
+    ]
+  }
+]

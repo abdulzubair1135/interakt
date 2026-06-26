@@ -1,0 +1,223 @@
+const JSONStore = require('../utils/jsonStore');
+const userStore = new JSONStore('users');
+const postStore = new JSONStore('posts');
+const fs = require('fs');
+const path = require('path');
+
+// @desc    Get all users
+// @route   GET /api/admin/users
+// @access  Private/Admin
+exports.getAllUsers = async (req, res) => {
+  try {
+    const allUsers = await userStore.read();
+    const users = allUsers.map(({ password, ...user }) => user);
+    res.status(200).json({ success: true, count: users.length, data: users });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Delete user (Ban)
+// @route   DELETE /api/admin/users/:id
+// @access  Private/Admin
+exports.deleteUser = async (req, res) => {
+  try {
+    const user = await userStore.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    // Delete all posts by this user
+    const allPosts = await postStore.read();
+    const remainingPosts = allPosts.filter(p => p.user !== req.params.id);
+    await postStore.write(remainingPosts);
+    
+    // Delete user
+    await userStore.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({ success: true, data: {} });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Delete post
+// @route   DELETE /api/admin/posts/:id
+// @access  Private/Admin
+exports.deletePost = async (req, res) => {
+  try {
+    const post = await postStore.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ success: false, error: 'Post not found' });
+    }
+    
+    await postStore.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({ success: true, data: {} });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Get all activity logs
+// @route   GET /api/admin/logs
+// @access  Private/Admin
+exports.getActivityLogs = async (req, res) => {
+  try {
+    const logsFile = path.join(__dirname, '../data/activity_logs.json');
+    let logs = [];
+    if (fs.existsSync(logsFile)) {
+      logs = JSON.parse(fs.readFileSync(logsFile, 'utf8'));
+    }
+    res.status(200).json({ success: true, count: logs.length, data: logs });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Get all active password reset OTP requests
+// @route   GET /api/admin/otp-requests
+// @access  Private/Admin
+exports.getOtpRequests = async (req, res) => {
+  try {
+    const otpFile = path.join(__dirname, '../data/otp_requests.json');
+    let requests = [];
+    if (fs.existsSync(otpFile)) {
+      requests = JSON.parse(fs.readFileSync(otpFile, 'utf8'));
+    }
+    const now = new Date();
+    const activeRequests = requests.filter(r => new Date(r.expiresAt) > now && !r.verified);
+    res.status(200).json({ success: true, count: activeRequests.length, data: activeRequests });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Ban or Unban a user
+// @route   POST /api/admin/users/:id/ban
+// @access  Private/Admin
+exports.banUser = async (req, res) => {
+  try {
+    const { duration } = req.body; // '3_days', '10_days', '1_month', 'permanent', 'none'
+    const user = await userStore.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    if (user.role === 'admin') {
+      return res.status(400).json({ success: false, error: 'Cannot ban an admin user' });
+    }
+
+    let bannedUntil = null;
+    let logMsg = '';
+    
+    if (duration === '3_days') {
+      bannedUntil = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+      logMsg = 'Banned user for 3 days';
+    } else if (duration === '10_days') {
+      bannedUntil = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString();
+      logMsg = 'Banned user for 10 days';
+    } else if (duration === '1_month') {
+      bannedUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      logMsg = 'Banned user for 1 month';
+    } else if (duration === 'permanent') {
+      bannedUntil = 'permanent';
+      logMsg = 'Banned user permanently';
+    } else {
+      bannedUntil = null;
+      logMsg = 'Unbanned user';
+    }
+
+    const updatedUser = await userStore.findByIdAndUpdate(req.params.id, { bannedUntil });
+    const { logActivity } = require('../utils/activityLogger');
+    await logActivity(req.user.id, req.user.username, 'ban_user', `${logMsg}: ${user.username}`, req.ip);
+
+    res.status(200).json({ success: true, data: updatedUser });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Get all reports
+// @route   GET /api/admin/reports
+// @access  Private/Admin
+exports.getReports = async (req, res) => {
+  try {
+    const reportStore = new JSONStore('reports');
+    const reports = await reportStore.read();
+    const users = await userStore.read();
+    const populated = reports.map(r => ({
+      ...r,
+      senderUser: users.find(u => u._id === r.sender) || { username: 'Unknown' },
+      recipientUser: users.find(u => u._id === r.recipient) || { username: 'Unknown' },
+      reporterUser: users.find(u => u._id === r.reportedBy) || { username: 'Unknown' }
+    }));
+    res.status(200).json({ success: true, count: populated.length, data: populated });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Delete report
+// @route   DELETE /api/admin/reports/:id
+// @access  Private/Admin
+exports.deleteReport = async (req, res) => {
+  try {
+    const reportStore = new JSONStore('reports');
+    await reportStore.findByIdAndDelete(req.params.id);
+    res.status(200).json({ success: true, data: {} });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Create advertisement
+// @route   POST /api/admin/ads
+// @access  Private/Admin
+exports.createAd = async (req, res) => {
+  try {
+    const adStore = new JSONStore('ads');
+    const { company, title, description, image, link } = req.body;
+    const ad = await adStore.create({
+      company,
+      title,
+      description,
+      image: image || '',
+      link: link || '',
+      clicks: 0,
+      impressions: 0,
+      isActive: true
+    });
+    const { logActivity } = require('../utils/activityLogger');
+    await logActivity(req.user.id, req.user.username, 'create_ad', `Created ad: ${title} for ${company}`, req.ip);
+    res.status(201).json({ success: true, data: ad });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Delete advertisement
+// @route   DELETE /api/admin/ads/:id
+// @access  Private/Admin
+exports.deleteAd = async (req, res) => {
+  try {
+    const adStore = new JSONStore('ads');
+    await adStore.findByIdAndDelete(req.params.id);
+    res.status(200).json({ success: true, data: {} });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Get advertisements stats
+// @route   GET /api/admin/ads/stats
+// @access  Private/Admin
+exports.getAdStats = async (req, res) => {
+  try {
+    const adStore = new JSONStore('ads');
+    const ads = await adStore.read();
+    res.status(200).json({ success: true, count: ads.length, data: ads });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+

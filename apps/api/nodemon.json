@@ -1,0 +1,5 @@
+{
+  "watch": ["server.js", "controllers/", "routes/", "middleware/", "utils/"],
+  "ignore": ["data/*", "public/*", "*.json", "data/**", "public/**"],
+  "ext": "js"
+}

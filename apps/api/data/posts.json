@@ -1,0 +1,255 @@
+[
+  {
+    "_id": "1782456908143p9c9b",
+    "createdAt": "2026-06-26T06:55:08.143Z",
+    "updatedAt": "2026-06-26T06:55:08.151Z",
+    "text": "Hello CampusHub! #elite",
+    "category": "General",
+    "likes": [],
+    "saves": [],
+    "comments": [
+      {
+        "_id": "1782456908151vtvtc",
+        "text": "This is an elite comment!",
+        "createdAt": "2026-06-26T06:55:08.151Z"
+      }
+    ],
+    "expireAt": "2026-06-27T06:55:08.143Z"
+  },
+  {
+    "_id": "1782459061229u5qt4",
+    "createdAt": "2026-06-26T07:31:01.229Z",
+    "updatedAt": "2026-06-26T07:31:01.240Z",
+    "text": "Hello CampusHub! #elite",
+    "category": "General",
+    "likes": [],
+    "saves": [],
+    "comments": [
+      {
+        "_id": "1782459061240o42kg",
+        "text": "This is an elite comment!",
+        "createdAt": "2026-06-26T07:31:01.240Z"
+      }
+    ],
+    "expireAt": "2026-06-27T07:31:01.229Z"
+  },
+  {
+    "_id": "17824643926826me4m",
+    "createdAt": "2026-06-26T08:59:52.682Z",
+    "updatedAt": "2026-06-26T08:59:52.692Z",
+    "text": "Hello CampusHub! #elite",
+    "category": "General",
+    "user": "1782464392657wdax7",
+    "likes": [],
+    "saves": [],
+    "comments": [
+      {
+        "_id": "1782464392692q5nso",
+        "user": "1782464392657wdax7",
+        "text": "This is an elite comment!",
+        "createdAt": "2026-06-26T08:59:52.692Z"
+      }
+    ],
+    "expireAt": "2026-06-27T08:59:52.682Z"
+  },
+  {
+    "_id": "1782466482441enxvc",
+    "createdAt": "2026-06-26T09:34:42.441Z",
+    "updatedAt": "2026-06-26T09:52:23.862Z",
+    "text": "Hello CampusHub! #elite",
+    "category": "General",
+    "user": "17824664824127wzgg",
+    "likes": [
+      "1782459320852x22lw"
+    ],
+    "saves": [],
+    "comments": [
+      {
+        "_id": "17824664824512ds3o",
+        "user": "17824664824127wzgg",
+        "text": "This is an elite comment!",
+        "createdAt": "2026-06-26T09:34:42.451Z"
+      },
+      {
+        "_id": "1782467543861i9lgz",
+        "user": "1782459320852x22lw",
+        "text": "hii",
+        "createdAt": "2026-06-26T09:52:23.861Z"
+      }
+    ],
+    "expireAt": "2026-06-27T09:34:42.440Z"
+  },
+  {
+    "_id": "1782467485787lc1qu",
+    "createdAt": "2026-06-26T09:51:25.787Z",
+    "updatedAt": "2026-06-26T09:51:25.787Z",
+    "text": "hiii ",
+    "media": "http://localhost:5005/uploads/1782467484301_weaiy.png",
+    "category": "funny",
+    "tags": [
+      "funny"
+    ],
+    "user": "1782459320852x22lw",
+    "likes": [],
+    "saves": [],
+    "comments": [],
+    "expireAt": "2026-06-27T09:51:25.786Z"
+  },
+  {
+    "_id": "1782467512537ases7",
+    "createdAt": "2026-06-26T09:51:52.537Z",
+    "updatedAt": "2026-06-26T09:51:52.537Z",
+    "text": "hiii",
+    "media": "http://localhost:5005/uploads/1782467510092_0gypr.png",
+    "category": "general",
+    "tags": [
+      "general"
+    ],
+    "user": "1782459320852x22lw",
+    "likes": [],
+    "saves": [],
+    "comments": [],
+    "expireAt": "2026-06-27T09:51:52.536Z"
+  },
+  {
+    "_id": "1782467548841b0m0k",
+    "createdAt": "2026-06-26T09:52:28.841Z",
+    "updatedAt": "2026-06-26T09:52:28.841Z",
+    "text": "hii",
+    "category": "general",
+    "tags": [
+      "general"
+    ],
+    "user": "1782459320852x22lw",
+    "likes": [],
+    "saves": [],
+    "comments": [],
+    "expireAt": "2026-06-27T09:52:28.841Z"
+  },
+  {
+    "_id": "1782467563081yufjr",
+    "createdAt": "2026-06-26T09:52:43.081Z",
+    "updatedAt": "2026-06-26T09:52:43.081Z",
+    "text": "hii",
+    "category": "general",
+    "tags": [
+      "general"
+    ],
+    "user": "1782459320852x22lw",
+    "likes": [],
+    "saves": [],
+    "comments": [],
+    "expireAt": "2026-06-27T09:52:43.081Z"
+  },
+  {
+    "_id": "1782467581362ku0ew",
+    "createdAt": "2026-06-26T09:53:01.362Z",
+    "updatedAt": "2026-06-26T09:53:01.362Z",
+    "text": "hiii",
+    "category": "general",
+    "tags": [
+      "general"
+    ],
+    "user": "1782459320852x22lw",
+    "likes": [],
+    "saves": [],
+    "comments": [],
+    "expireAt": "2026-06-27T09:53:01.362Z"
+  },
+  {
+    "_id": "1782467762607lrm8p",
+    "createdAt": "2026-06-26T09:56:02.607Z",
+    "updatedAt": "2026-06-26T09:56:02.607Z",
+    "text": "heyy",
+    "category": "general",
+    "tags": [
+      "general"
+    ],
+    "user": "1782459320852x22lw",
+    "likes": [],
+    "saves": [],
+    "comments": [],
+    "expireAt": "2026-06-27T09:56:02.606Z"
+  },
+  {
+    "_id": "1782467779753wecyn",
+    "createdAt": "2026-06-26T09:56:19.753Z",
+    "updatedAt": "2026-06-26T09:56:19.753Z",
+    "text": "hii",
+    "category": "general",
+    "tags": [
+      "general"
+    ],
+    "user": "1782456782373s0foj",
+    "likes": [],
+    "saves": [],
+    "comments": [],
+    "expireAt": "2026-06-27T09:56:19.753Z"
+  },
+  {
+    "_id": "1782467912858tuk4s",
+    "createdAt": "2026-06-26T09:58:32.858Z",
+    "updatedAt": "2026-06-26T09:58:32.858Z",
+    "text": "hii",
+    "category": "general",
+    "tags": [
+      "general"
+    ],
+    "user": "1782459320852x22lw",
+    "likes": [],
+    "saves": [],
+    "comments": [],
+    "expireAt": "2026-06-27T09:58:32.857Z"
+  },
+  {
+    "_id": "1782468027922om3pp",
+    "createdAt": "2026-06-26T10:00:27.922Z",
+    "updatedAt": "2026-06-26T10:00:27.922Z",
+    "text": "hii",
+    "category": "general",
+    "tags": [
+      "general"
+    ],
+    "user": "1782468021507ttzxp",
+    "likes": [],
+    "saves": [],
+    "comments": [],
+    "expireAt": "2026-06-27T10:00:27.922Z"
+  },
+  {
+    "_id": "1782479556195iz0u6",
+    "createdAt": "2026-06-26T13:12:36.195Z",
+    "updatedAt": "2026-06-26T13:45:11.717Z",
+    "text": "hi",
+    "category": "general",
+    "tags": [
+      "general"
+    ],
+    "user": "1782468021507ttzxp",
+    "likes": [
+      "1782468021507ttzxp"
+    ],
+    "saves": [],
+    "comments": [],
+    "expireAt": "2026-06-27T13:12:36.195Z"
+  },
+  {
+    "_id": "1782480727832z1xny",
+    "createdAt": "2026-06-26T13:32:07.832Z",
+    "updatedAt": "2026-06-26T13:32:07.842Z",
+    "text": "Hello CampusHub! #elite",
+    "category": "General",
+    "user": "1782480727769l5z9g",
+    "likes": [],
+    "saves": [],
+    "comments": [
+      {
+        "_id": "17824807278413etsh",
+        "user": "1782480727769l5z9g",
+        "text": "This is an elite comment!",
+        "createdAt": "2026-06-26T13:32:07.841Z"
+      }
+    ],
+    "expireAt": "2026-06-27T13:32:07.832Z"
+  }
+]

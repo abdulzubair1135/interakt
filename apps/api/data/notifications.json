@@ -1,0 +1,50 @@
+[
+  {
+    "_id": "17824632906745hl9d",
+    "createdAt": "2026-06-26T08:41:30.674Z",
+    "updatedAt": "2026-06-26T08:41:30.674Z",
+    "user": "1782459320852x22lw",
+    "sender": "1782462964381us9nt",
+    "type": "follow",
+    "isRead": true
+  },
+  {
+    "_id": "17824633652524zzla",
+    "createdAt": "2026-06-26T08:42:45.252Z",
+    "updatedAt": "2026-06-26T08:42:45.252Z",
+    "user": "1782462964381us9nt",
+    "sender": "1782459320852x22lw",
+    "type": "like",
+    "post": "17824633224679wu9c",
+    "isRead": true
+  },
+  {
+    "_id": "1782463373353q5np5",
+    "createdAt": "2026-06-26T08:42:53.353Z",
+    "updatedAt": "2026-06-26T08:42:53.353Z",
+    "user": "1782462964381us9nt",
+    "sender": "1782459320852x22lw",
+    "type": "follow",
+    "isRead": true
+  },
+  {
+    "_id": "1782467538815lk84n",
+    "createdAt": "2026-06-26T09:52:18.815Z",
+    "updatedAt": "2026-06-26T09:52:18.815Z",
+    "user": "17824664824127wzgg",
+    "sender": "1782459320852x22lw",
+    "type": "like",
+    "post": "1782466482441enxvc",
+    "isRead": false
+  },
+  {
+    "_id": "178246754386341oac",
+    "createdAt": "2026-06-26T09:52:23.863Z",
+    "updatedAt": "2026-06-26T09:52:23.863Z",
+    "user": "17824664824127wzgg",
+    "sender": "1782459320852x22lw",
+    "type": "comment",
+    "post": "1782466482441enxvc",
+    "isRead": false
+  }
+]

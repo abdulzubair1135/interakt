@@ -1,0 +1,38 @@
+[
+  {
+    "_id": "17824661627043dbq9",
+    "userId": "178246574143355z76",
+    "username": "testuser_1782465741426",
+    "uid": "24BCA01",
+    "phone": "9876543210",
+    "email": "testuser_1782465741426@test.com",
+    "otp": "898677",
+    "expiresAt": "2026-06-26T09:39:22.703Z",
+    "createdAt": "2026-06-26T09:29:22.704Z",
+    "verified": true
+  },
+  {
+    "_id": "1782466489758t0ys5",
+    "userId": "17824664824127wzgg",
+    "username": "testuser_1782466482406",
+    "uid": "24BCA01",
+    "phone": "9876543210",
+    "email": "testuser_1782466482406@test.com",
+    "otp": "679146",
+    "expiresAt": "2026-06-26T09:44:49.757Z",
+    "createdAt": "2026-06-26T09:34:49.758Z",
+    "verified": true
+  },
+  {
+    "_id": "1782467827904csk3v",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "uid": "24BCA83",
+    "phone": "123456789",
+    "email": "abdulzubair221@gmail.com",
+    "otp": "994148",
+    "expiresAt": "2026-06-26T10:07:07.903Z",
+    "createdAt": "2026-06-26T09:57:07.904Z",
+    "verified": true
+  }
+]

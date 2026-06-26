@@ -1,0 +1,14 @@
+node_modules/
+.next/
+dist/
+build/
+.expo/
+.turbo/
+*.log
+interakt-project.zip
+temp_zip_folder/
+scratch/
+.env
+.env.local
+.DS_Store
+Thumbs.db

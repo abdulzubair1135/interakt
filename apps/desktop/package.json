@@ -1,0 +1,12 @@
+{
+  "name": "campushub-pro-desktop",
+  "version": "1.0.0",
+  "description": "Desktop wrapper for CampusHub Pro",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron": "^34.0.0"
+  }
+}

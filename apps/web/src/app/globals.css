@@ -1,0 +1,171 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  --background: #0f0c29;
+  --foreground: #f3f4f6;
+  --accent-purple: #8b5cf6;
+  --accent-pink: #d946ef;
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  --glow-purple: rgba(139, 92, 246, 0.5);
+  --glow-pink: rgba(217, 70, 239, 0.5);
+}
+
+body {
+  color: var(--foreground);
+  background: radial-gradient(circle at top right, #1e1b4b 0%, #090514 60%, #020105 100%);
+  min-height: 100vh;
+  font-family: var(--font-sans), Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+:root[data-theme='light'] {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glass-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+}
+
+/* absolute override for light theme legibility */
+:root[data-theme='light'] body {
+  background: radial-gradient(circle at top right, #f1f5f9 0%, #cbd5e1 100%);
+}
+
+:root[data-theme='light'] .glass,
+:root[data-theme='light'] .glass p,
+:root[data-theme='light'] .glass h1,
+:root[data-theme='light'] .glass h2,
+:root[data-theme='light'] .glass h3,
+:root[data-theme='light'] .glass h4,
+:root[data-theme='light'] .glass span,
+:root[data-theme='light'] .glass div,
+:root[data-theme='light'] .text-gray-200,
+:root[data-theme='light'] .text-gray-300,
+:root[data-theme='light'] .text-gray-400,
+:root[data-theme='light'] .text-white {
+  color: #0f172a !important;
+}
+
+:root[data-theme='light'] aside,
+:root[data-theme='light'] aside *,
+:root[data-theme='light'] aside .text-white,
+:root[data-theme='light'] aside .text-gray-400,
+:root[data-theme='light'] aside .text-gray-300,
+:root[data-theme='light'] aside .text-gray-200,
+:root[data-theme='light'] aside span,
+:root[data-theme='light'] aside div,
+:root[data-theme='light'] aside h1,
+:root[data-theme='light'] aside h2,
+:root[data-theme='light'] aside h3,
+:root[data-theme='light'] aside h4,
+:root[data-theme='light'] aside p,
+:root[data-theme='light'] nav.fixed.bottom-0,
+:root[data-theme='light'] nav.fixed.bottom-0 * {
+  color: #ffffff !important;
+}
+
+:root[data-theme='light'] aside .text-gray-400 {
+  color: #9ca3af !important;
+}
+
+:root[data-theme='light'] aside .text-gray-300 {
+  color: #d1d5db !important;
+}
+
+/* Exempt buttons and badges with filled backgrounds from light theme overrides */
+:root[data-theme='light'] button.text-white,
+:root[data-theme='light'] button.text-white *,
+:root[data-theme='light'] button .text-white,
+:root[data-theme='light'] button .text-white *,
+:root[data-theme='light'] .bg-gradient-to-r.text-white,
+:root[data-theme='light'] .bg-gradient-to-r.text-white *,
+:root[data-theme='light'] [class*="bg-purple"].text-white,
+:root[data-theme='light'] [class*="bg-purple"].text-white *,
+:root[data-theme='light'] [class*="bg-pink"].text-white,
+:root[data-theme='light'] [class*="bg-pink"].text-white *,
+:root[data-theme='light'] [class*="bg-blue"].text-white,
+:root[data-theme='light'] [class*="bg-blue"].text-white *,
+:root[data-theme='light'] [class*="bg-red"].text-white,
+:root[data-theme='light'] [class*="bg-red"].text-white *,
+:root[data-theme='light'] [class*="bg-green"].text-white,
+:root[data-theme='light'] [class*="bg-green"].text-white *,
+:root[data-theme='light'] [class*="bg-indigo"].text-white,
+:root[data-theme='light'] [class*="bg-indigo"].text-white *,
+:root[data-theme='light'] [class*="bg-violet"].text-white,
+:root[data-theme='light'] [class*="bg-violet"].text-white *,
+:root[data-theme='light'] [class*="bg-fuchsia"].text-white,
+:root[data-theme='light'] [class*="bg-fuchsia"].text-white * {
+  color: #ffffff !important;
+}
+
+/* Maintain custom gradients and active tabs */
+:root[data-theme='light'] .text-gradient {
+  background: linear-gradient(to right bottom, #c4b5fd, #d946ef, #8b5cf6) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+:root[data-theme='light'] input,
+:root[data-theme='light'] textarea {
+  color: #0f172a !important;
+  background-color: rgba(0,0,0,0.05) !important;
+}
+
+/* Custom Scrollbar for God Level UX */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-purple);
+}
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Add a subtle internal glow to glass panels */
+.glass::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+}
+
+.text-gradient {
+  background: linear-gradient(to right bottom, #c4b5fd, #d946ef, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* God Level Glow Animation */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px 0 var(--glow-purple); }
+  50% { box-shadow: 0 0 40px 10px var(--glow-pink); }
+}
+
+.god-glow {
+  animation: pulse-glow 3s infinite alternate;
+}

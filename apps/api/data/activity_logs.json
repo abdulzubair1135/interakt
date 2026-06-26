@@ -1,0 +1,1194 @@
+[
+  {
+    "_id": "1782482169968g9ilh",
+    "userId": null,
+    "username": "1782456782373s0foj",
+    "action": "inspect_attempt",
+    "details": "INSPECT DEVTOOLS DETECTED! Loc: Local Network. Details: Inspect attempt detected via: DevTools window resize detection",
+    "ip": "::1",
+    "timestamp": "2026-06-26T13:56:09.968Z"
+  },
+  {
+    "_id": "1782482159668ksip7",
+    "userId": null,
+    "username": "1782456782373s0foj",
+    "action": "inspect_attempt",
+    "details": "INSPECT DEVTOOLS DETECTED! Loc: Local Network. Details: Inspect attempt detected via: DevTools window resize detection",
+    "ip": "::1",
+    "timestamp": "2026-06-26T13:55:59.668Z"
+  },
+  {
+    "_id": "1782482104520r7cr8",
+    "userId": "1782456782373s0foj",
+    "username": "admin",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T13:55:04.520Z"
+  },
+  {
+    "_id": "1782481729798jhjt5",
+    "userId": "1782456782373s0foj",
+    "username": "admin",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T13:48:49.798Z"
+  },
+  {
+    "_id": "1782481503478bchdr",
+    "userId": "1782468021507ttzxp",
+    "username": "shaikh",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T13:45:03.478Z"
+  },
+  {
+    "_id": "1782481224808nhwvm",
+    "userId": "1782468021507ttzxp",
+    "username": "shaikh",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T13:40:24.808Z"
+  },
+  {
+    "_id": "1782480727843z7wt3",
+    "userId": "1782480727769l5z9g",
+    "username": "testuser_1782480727714",
+    "action": "add_comment",
+    "details": "Commented on post: \"This is an elite comment!\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T13:32:07.843Z"
+  },
+  {
+    "_id": "1782480727834ce3nw",
+    "userId": "1782480727769l5z9g",
+    "username": "testuser_1782480727714",
+    "action": "create_post",
+    "details": "Created post: \"Hello CampusHub! #elite\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T13:32:07.834Z"
+  },
+  {
+    "_id": "1782480727820p3blr",
+    "userId": "1782480727769l5z9g",
+    "username": "testuser_1782480727714",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T13:32:07.820Z"
+  },
+  {
+    "_id": "1782480727771liw4a",
+    "userId": "1782480727769l5z9g",
+    "username": "testuser_1782480727714",
+    "action": "register",
+    "details": "User registered successfully with College UID: 24BCA01",
+    "ip": "::1",
+    "timestamp": "2026-06-26T13:32:07.771Z"
+  },
+  {
+    "_id": "1782479556198gyunl",
+    "userId": "1782468021507ttzxp",
+    "username": "shaikh",
+    "action": "create_post",
+    "details": "Created post: \"hi\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T13:12:36.198Z"
+  },
+  {
+    "_id": "1782479551419i69eu",
+    "userId": "1782468021507ttzxp",
+    "username": "shaikh",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T13:12:31.419Z"
+  },
+  {
+    "_id": "1782468087632zk2je",
+    "userId": "1782456782373s0foj",
+    "username": "admin",
+    "action": "send_personal_msg",
+    "details": "Sent personal message to user 1782468021507ttzxp",
+    "ip": "::1",
+    "timestamp": "2026-06-26T10:01:27.632Z"
+  },
+  {
+    "_id": "1782468078383ckxke",
+    "userId": "1782456782373s0foj",
+    "username": "admin",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T10:01:18.383Z"
+  },
+  {
+    "_id": "1782468043096nhwf9",
+    "userId": "1782468021507ttzxp",
+    "username": "shaikh",
+    "action": "send_personal_msg",
+    "details": "Sent personal message to user 1782456782373s0foj",
+    "ip": "::1",
+    "timestamp": "2026-06-26T10:00:43.096Z"
+  },
+  {
+    "_id": "17824680279251wo1o",
+    "userId": "1782468021507ttzxp",
+    "username": "shaikh",
+    "action": "create_post",
+    "details": "Created post: \"hii\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T10:00:27.925Z"
+  },
+  {
+    "_id": "17824680215105pa5n",
+    "userId": "1782468021507ttzxp",
+    "username": "shaikh",
+    "action": "register",
+    "details": "User registered successfully with College UID: 24BCA03",
+    "ip": "::1",
+    "timestamp": "2026-06-26T10:00:21.510Z"
+  },
+  {
+    "_id": "17824679128600lzzt",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "create_post",
+    "details": "Created post: \"hii\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:58:32.860Z"
+  },
+  {
+    "_id": "1782467907972kl6hc",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:58:27.972Z"
+  },
+  {
+    "_id": "17824678806655b0v2",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "password_reset_success",
+    "details": "Reset password successfully using admin OTP",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:58:00.665Z"
+  },
+  {
+    "_id": "17824678563982aico",
+    "userId": "1782456782373s0foj",
+    "username": "admin",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:57:36.398Z"
+  },
+  {
+    "_id": "17824678279062lvik",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "forgot_password_request",
+    "details": "Requested password reset. OTP generated for admin approval.",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:57:07.906Z"
+  },
+  {
+    "_id": "1782467797056wn074",
+    "userId": null,
+    "username": "Guest",
+    "action": "login_fail",
+    "details": "Failed login attempt for identifier: 24BCA02",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:56:37.056Z"
+  },
+  {
+    "_id": "1782467793089xztpa",
+    "userId": null,
+    "username": "Guest",
+    "action": "login_fail",
+    "details": "Failed login attempt for identifier: admi@gamevault.com",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:56:33.089Z"
+  },
+  {
+    "_id": "1782467779755zon80",
+    "userId": "1782456782373s0foj",
+    "username": "admin",
+    "action": "create_post",
+    "details": "Created post: \"hii\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:56:19.755Z"
+  },
+  {
+    "_id": "17824677758950zn91",
+    "userId": "1782456782373s0foj",
+    "username": "admin",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:56:15.895Z"
+  },
+  {
+    "_id": "17824677626096semx",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "create_post",
+    "details": "Created post: \"heyy\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:56:02.609Z"
+  },
+  {
+    "_id": "17824675813653h9eb",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "create_post",
+    "details": "Created post: \"hiii\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:53:01.365Z"
+  },
+  {
+    "_id": "1782467563083lyk1a",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "create_post",
+    "details": "Created post: \"hii\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:52:43.083Z"
+  },
+  {
+    "_id": "178246754884330brz",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "create_post",
+    "details": "Created post: \"hii\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:52:28.843Z"
+  },
+  {
+    "_id": "1782467543864fvgr4",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "add_comment",
+    "details": "Commented on post: \"hii\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:52:23.864Z"
+  },
+  {
+    "_id": "1782467512540sps47",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "create_post",
+    "details": "Created post: \"hiii\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:51:52.540Z"
+  },
+  {
+    "_id": "178246751009615mxq",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "upload_image",
+    "details": "Uploaded image: 1782467510092_0gypr.png",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:51:50.096Z"
+  },
+  {
+    "_id": "1782467485790d0xbj",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "create_post",
+    "details": "Created post: \"hiii \"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:51:25.790Z"
+  },
+  {
+    "_id": "1782467484311q6zo1",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "upload_image",
+    "details": "Uploaded image: 1782467484301_weaiy.png",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:51:24.311Z"
+  },
+  {
+    "_id": "1782467462058gn6qb",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:51:02.058Z"
+  },
+  {
+    "_id": "1782466489813bbb4a",
+    "userId": "17824664824127wzgg",
+    "username": "testuser_1782466482406",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:34:49.813Z"
+  },
+  {
+    "_id": "1782466489805h1vvo",
+    "userId": "17824664824127wzgg",
+    "username": "testuser_1782466482406",
+    "action": "password_reset_success",
+    "details": "Reset password successfully using admin OTP",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:34:49.805Z"
+  },
+  {
+    "_id": "1782466489789o93q1",
+    "userId": "1782456782373s0foj",
+    "username": "admin",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:34:49.789Z"
+  },
+  {
+    "_id": "1782466489760dwlk5",
+    "userId": "17824664824127wzgg",
+    "username": "testuser_1782466482406",
+    "action": "forgot_password_request",
+    "details": "Requested password reset. OTP generated for admin approval.",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:34:49.760Z"
+  },
+  {
+    "_id": "178246648245345vwb",
+    "userId": "17824664824127wzgg",
+    "username": "testuser_1782466482406",
+    "action": "add_comment",
+    "details": "Commented on post: \"This is an elite comment!\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:34:42.453Z"
+  },
+  {
+    "_id": "17824664824432bzh6",
+    "userId": "17824664824127wzgg",
+    "username": "testuser_1782466482406",
+    "action": "create_post",
+    "details": "Created post: \"Hello CampusHub! #elite\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:34:42.443Z"
+  },
+  {
+    "_id": "1782466482428efovg",
+    "userId": "17824664824127wzgg",
+    "username": "testuser_1782466482406",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:34:42.428Z"
+  },
+  {
+    "_id": "1782466482415b1lbj",
+    "userId": "17824664824127wzgg",
+    "username": "testuser_1782466482406",
+    "action": "register",
+    "details": "User registered successfully with College UID: 24BCA01",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:34:42.415Z"
+  },
+  {
+    "_id": "1782466470761qeg1u",
+    "userId": "1782456782373s0foj",
+    "username": "admin",
+    "action": "send_global_msg",
+    "details": "Sent global message: \"helo\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:34:30.761Z"
+  },
+  {
+    "_id": "1782466462094yoyuy",
+    "userId": "1782456782373s0foj",
+    "username": "admin",
+    "action": "send_personal_msg",
+    "details": "Sent personal message to user 1782459320852x22lw",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:34:22.094Z"
+  },
+  {
+    "_id": "178246624380067dqc",
+    "userId": "1782456782373s0foj",
+    "username": "admin",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:30:43.800Z"
+  },
+  {
+    "_id": "1782466162746k3chj",
+    "userId": "178246574143355z76",
+    "username": "testuser_1782465741426",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:29:22.746Z"
+  },
+  {
+    "_id": "1782466162739o8cuj",
+    "userId": "178246574143355z76",
+    "username": "testuser_1782465741426",
+    "action": "password_reset_success",
+    "details": "Reset password successfully using admin OTP",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:29:22.739Z"
+  },
+  {
+    "_id": "17824661627227m5ma",
+    "userId": "1782456782373s0foj",
+    "username": "admin",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:29:22.722Z"
+  },
+  {
+    "_id": "1782466162705lu3zd",
+    "userId": "178246574143355z76",
+    "username": "testuser_1782465741426",
+    "action": "forgot_password_request",
+    "details": "Requested password reset. OTP generated for admin approval.",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:29:22.705Z"
+  },
+  {
+    "_id": "1782466156316hwbpq",
+    "userId": "1782456782373s0foj",
+    "username": "admin",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:29:16.316Z"
+  },
+  {
+    "_id": "1782466118626ohcxr",
+    "userId": "1782462964381us9nt",
+    "username": "sncnn sck",
+    "action": "send_global_msg",
+    "details": "Sent global message: \"hii\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:28:38.626Z"
+  },
+  {
+    "_id": "1782466101937pk419",
+    "userId": "1782462964381us9nt",
+    "username": "sncnn sck",
+    "action": "send_global_msg",
+    "details": "Sent global message: \"heyy\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:28:21.937Z"
+  },
+  {
+    "_id": "17824657567507yka6",
+    "userId": "178246574143355z76",
+    "username": "testuser_1782465741426",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:22:36.750Z"
+  },
+  {
+    "_id": "1782465756739b3kqe",
+    "userId": "178246574143355z76",
+    "username": "testuser_1782465741426",
+    "action": "password_reset_success",
+    "details": "Reset password successfully using admin OTP",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:22:36.739Z"
+  },
+  {
+    "_id": "17824657567141cftr",
+    "userId": "1782456782373s0foj",
+    "username": "adminuser",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:22:36.714Z"
+  },
+  {
+    "_id": "1782465756685ve0zy",
+    "userId": "178246574143355z76",
+    "username": "testuser_1782465741426",
+    "action": "forgot_password_request",
+    "details": "Requested password reset. OTP generated for admin approval.",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:22:36.685Z"
+  },
+  {
+    "_id": "1782465746781dnvpc",
+    "userId": "1782456782373s0foj",
+    "username": "adminuser",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:22:26.781Z"
+  },
+  {
+    "_id": "1782465741474twc0r",
+    "userId": "178246574143355z76",
+    "username": "testuser_1782465741426",
+    "action": "add_comment",
+    "details": "Commented on post: \"This is an elite comment!\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:22:21.474Z"
+  },
+  {
+    "_id": "1782465741464mbr1o",
+    "userId": "178246574143355z76",
+    "username": "testuser_1782465741426",
+    "action": "create_post",
+    "details": "Created post: \"Hello CampusHub! #elite\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:22:21.464Z"
+  },
+  {
+    "_id": "1782465741450x0awn",
+    "userId": "178246574143355z76",
+    "username": "testuser_1782465741426",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:22:21.450Z"
+  },
+  {
+    "_id": "1782465741436qniq0",
+    "userId": "178246574143355z76",
+    "username": "testuser_1782465741426",
+    "action": "register",
+    "details": "User registered successfully with College UID: 24BCA01",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:22:21.437Z"
+  },
+  {
+    "_id": "17824649743026zw5i",
+    "userId": "1782462964381us9nt",
+    "username": "sncnn sck",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:09:34.302Z"
+  },
+  {
+    "_id": "178246443981871cf3",
+    "userId": "1782462964381us9nt",
+    "username": "sncnn sck",
+    "action": "send_personal_msg",
+    "details": "Sent personal message to user 1782459320852x22lw",
+    "ip": "::1",
+    "timestamp": "2026-06-26T09:00:39.818Z"
+  },
+  {
+    "_id": "1782464392693451b2",
+    "userId": "1782464392657wdax7",
+    "username": "testuser_1782464392651",
+    "action": "add_comment",
+    "details": "Commented on post: \"This is an elite comment!\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:59:52.693Z"
+  },
+  {
+    "_id": "1782464392685qtzet",
+    "userId": "1782464392657wdax7",
+    "username": "testuser_1782464392651",
+    "action": "create_post",
+    "details": "Created post: \"Hello CampusHub! #elite\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:59:52.685Z"
+  },
+  {
+    "_id": "1782464392670lapoq",
+    "userId": "1782464392657wdax7",
+    "username": "testuser_1782464392651",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:59:52.670Z"
+  },
+  {
+    "_id": "1782464392660hv2zk",
+    "userId": "1782464392657wdax7",
+    "username": "testuser_1782464392651",
+    "action": "register",
+    "details": "User registered successfully with College UID: 24BCA01",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:59:52.660Z"
+  },
+  {
+    "_id": "1782464017755b1c7q",
+    "userId": "1782462964381us9nt",
+    "username": "sncnn sck",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:53:37.755Z"
+  },
+  {
+    "_id": "1782463437467dtjdc",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "send_personal_msg",
+    "details": "Sent personal message to user 1782462964381us9nt",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:43:57.467Z"
+  },
+  {
+    "_id": "1782463395928mhvnx",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "send_personal_msg",
+    "details": "Sent personal message to user 1782462964381us9nt",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:43:15.928Z"
+  },
+  {
+    "_id": "1782463380243c01ze",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "send_global_msg",
+    "details": "Sent global message: \"hello\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:43:00.243Z"
+  },
+  {
+    "_id": "17824633605363o2qg",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:42:40.536Z"
+  },
+  {
+    "_id": "17824633422676rq67",
+    "userId": "1782462964381us9nt",
+    "username": "sncnn sck",
+    "action": "add_comment",
+    "details": "Commented on post: \"hii\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:42:22.267Z"
+  },
+  {
+    "_id": "178246332246956axi",
+    "userId": "1782462964381us9nt",
+    "username": "sncnn sck",
+    "action": "create_post",
+    "details": "Created post: \"loook\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:42:02.469Z"
+  },
+  {
+    "_id": "1782463316733le6xu",
+    "userId": "1782462964381us9nt",
+    "username": "sncnn sck",
+    "action": "upload_image",
+    "details": "Uploaded image: 1782463316728_dv8zh.png",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:41:56.733Z"
+  },
+  {
+    "_id": "1782463308386rbmwd",
+    "userId": "1782462964381us9nt",
+    "username": "sncnn sck",
+    "action": "create_post",
+    "details": "Created post: \"hiii\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:41:48.386Z"
+  },
+  {
+    "_id": "1782463252932odg1f",
+    "userId": "1782462964381us9nt",
+    "username": "sncnn sck",
+    "action": "send_global_msg",
+    "details": "Sent global message: \"hiii\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:40:52.932Z"
+  },
+  {
+    "_id": "1782462970382agxfi",
+    "userId": "1782462964381us9nt",
+    "username": "sncnn sck",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:36:10.382Z"
+  },
+  {
+    "_id": "1782462969617q97dw",
+    "userId": "1782462964381us9nt",
+    "username": "sncnn sck",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:36:09.617Z"
+  },
+  {
+    "_id": "178246296849370r42",
+    "userId": "1782462964381us9nt",
+    "username": "sncnn sck",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:36:08.493Z"
+  },
+  {
+    "_id": "1782462964383x7vf8",
+    "userId": "1782462964381us9nt",
+    "username": "sncnn sck",
+    "action": "register",
+    "details": "User registered successfully with College UID: 24BCA02",
+    "ip": "::1",
+    "timestamp": "2026-06-26T08:36:04.383Z"
+  },
+  {
+    "_id": "1782460387457sbwub",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:53:07.457Z"
+  },
+  {
+    "_id": "17824603863755lwyc",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:53:06.375Z"
+  },
+  {
+    "_id": "1782460381375i2xbr",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:53:01.375Z"
+  },
+  {
+    "_id": "1782460380263pfls6",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:53:00.263Z"
+  },
+  {
+    "_id": "1782460291692bsv4g",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login_fail",
+    "details": "Failed login attempt (incorrect password)",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:51:31.692Z"
+  },
+  {
+    "_id": "1782459957092z21g1",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:45:57.092Z"
+  },
+  {
+    "_id": "1782459956299069xh",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:45:56.299Z"
+  },
+  {
+    "_id": "1782459937847lbfp8",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:45:37.847Z"
+  },
+  {
+    "_id": "17824599369450x70w",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:45:36.945Z"
+  },
+  {
+    "_id": "1782459936013rt0h9",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:45:36.013Z"
+  },
+  {
+    "_id": "178245988891869nk4",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:48.918Z"
+  },
+  {
+    "_id": "1782459888509tcrem",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:48.509Z"
+  },
+  {
+    "_id": "1782459888115j52o4",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:48.115Z"
+  },
+  {
+    "_id": "1782459887714zg8tv",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:47.714Z"
+  },
+  {
+    "_id": "17824598872453r7k5",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:47.245Z"
+  },
+  {
+    "_id": "17824598867517me19",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:46.751Z"
+  },
+  {
+    "_id": "1782459886023mupx9",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:46.023Z"
+  },
+  {
+    "_id": "1782459885653e1ql2",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:45.653Z"
+  },
+  {
+    "_id": "1782459885291msm5l",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:45.291Z"
+  },
+  {
+    "_id": "1782459884893tqgxq",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:44.893Z"
+  },
+  {
+    "_id": "17824598844856opzg",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:44.485Z"
+  },
+  {
+    "_id": "1782459884043z8tyl",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:44.043Z"
+  },
+  {
+    "_id": "17824598833328xday",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:43.332Z"
+  },
+  {
+    "_id": "1782459882524q3rur",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:42.524Z"
+  },
+  {
+    "_id": "1782459875765gjaea",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:35.765Z"
+  },
+  {
+    "_id": "1782459872768id22n",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:32.768Z"
+  },
+  {
+    "_id": "1782459871785bb64c",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:31.785Z"
+  },
+  {
+    "_id": "17824598458827mqvu",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:05.882Z"
+  },
+  {
+    "_id": "1782459844935laa26",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:04.935Z"
+  },
+  {
+    "_id": "1782459843971jsj90",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:03.971Z"
+  },
+  {
+    "_id": "1782459842647dm9ni",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:02.647Z"
+  },
+  {
+    "_id": "1782459841719jm3ju",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:01.719Z"
+  },
+  {
+    "_id": "1782459840771oybno",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:44:00.771Z"
+  },
+  {
+    "_id": "1782459838455olhe7",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:43:58.455Z"
+  },
+  {
+    "_id": "17824596093241z85e",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:40:09.324Z"
+  },
+  {
+    "_id": "1782459607786s8i1n",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:40:07.786Z"
+  },
+  {
+    "_id": "1782459606343gr57f",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:40:06.343Z"
+  },
+  {
+    "_id": "1782459604928rpplt",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:40:04.928Z"
+  },
+  {
+    "_id": "1782459582834nsqua",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:39:42.834Z"
+  },
+  {
+    "_id": "1782459581095bx668",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:39:41.095Z"
+  },
+  {
+    "_id": "1782459578738p26sl",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:39:38.738Z"
+  },
+  {
+    "_id": "1782459576212uhls3",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:39:36.212Z"
+  },
+  {
+    "_id": "1782459574741zi8ud",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:39:34.741Z"
+  },
+  {
+    "_id": "17824593248946aae3",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:35:24.894Z"
+  },
+  {
+    "_id": "1782459320854gz5ok",
+    "userId": "1782459320852x22lw",
+    "username": "Abdul Zubair",
+    "action": "register",
+    "details": "User registered successfully with College UID: 24BCA83",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:35:20.854Z"
+  },
+  {
+    "_id": "1782459061241fogp5",
+    "userId": null,
+    "username": "testuser_1782459061193",
+    "action": "add_comment",
+    "details": "Commented on post: \"This is an elite comment!\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:31:01.241Z"
+  },
+  {
+    "_id": "1782459061231kstmc",
+    "userId": null,
+    "username": "testuser_1782459061193",
+    "action": "create_post",
+    "details": "Created post: \"Hello CampusHub! #elite\"",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:31:01.231Z"
+  },
+  {
+    "_id": "1782459061215kqhgf",
+    "userId": "1782459061199s8aez",
+    "username": "testuser_1782459061193",
+    "action": "login",
+    "details": "User logged in successfully",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:31:01.215Z"
+  },
+  {
+    "_id": "17824590612001zrnf",
+    "userId": "1782459061199s8aez",
+    "username": "testuser_1782459061193",
+    "action": "register",
+    "details": "User registered successfully with College UID: 24BCA01",
+    "ip": "::1",
+    "timestamp": "2026-06-26T07:31:01.200Z"
+  },
+  {
+    "test": true,
+    "ts": 1782460335610
+  }
+]

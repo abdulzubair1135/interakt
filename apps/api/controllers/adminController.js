@@ -22,6 +22,11 @@ exports.getAllUsers = async (req, res) => {
 // @access  Private/Admin
 exports.deleteUser = async (req, res) => {
   try {
+    const mongoose = require('mongoose');
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ success: false, error: 'Cannot delete legacy JSON accounts. Please refresh your page to see the updated database.' });
+    }
+
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
@@ -207,7 +212,7 @@ exports.deleteAd = async (req, res) => {
 // @access  Private/Admin
 exports.getAdStats = async (req, res) => {
   try {
-    const ads = await Ad.find().lean();
+    const ads = await Ad.find().populate('clickedBy', 'username name email avatar').lean();
     res.status(200).json({ success: true, count: ads.length, data: ads });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

@@ -39,4 +39,10 @@ const messageSchema = new mongoose.Schema({
 
 messageSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
 
+// Filter out messages older than 24 hours from all find queries
+messageSchema.pre(/^find/, function(next) {
+  this.find({ createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } });
+  next();
+});
+
 module.exports = mongoose.model('Message', messageSchema);

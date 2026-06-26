@@ -35,7 +35,7 @@ export default function Login() {
       });
       
       localStorage.setItem('campushub_token', res.data.token);
-      router.push('/');
+      window.location.href = '/';
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err.response?.data?.error || 'Failed to login. Please try again.');

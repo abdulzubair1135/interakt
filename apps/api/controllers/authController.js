@@ -754,10 +754,14 @@ exports.getActiveAds = async (req, res) => {
 
 // @desc    Track ad click
 // @route   POST /api/auth/ads/:id/click
-// @access  Public
+// @access  Private
 exports.trackAdClick = async (req, res) => {
   try {
-    const ad = await Ad.findByIdAndUpdate(req.params.id, { $inc: { clicks: 1 } });
+    const updateQuery = { $inc: { clicks: 1 } };
+    if (req.user) {
+      updateQuery.$addToSet = { clickedBy: req.user.id };
+    }
+    const ad = await Ad.findByIdAndUpdate(req.params.id, updateQuery);
     if (!ad) {
       return res.status(404).json({ success: false, error: 'Ad not found' });
     }
@@ -835,7 +839,11 @@ exports.forgotPassword = async (req, res) => {
     const otp = crypto.randomInt(100000, 999999).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 mins expiry
 
-    const otpFile = path.join(__dirname, '../data/otp_requests.json');
+    const dataDir = path.join(__dirname, '../data');
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    const otpFile = path.join(dataDir, 'otp_requests.json');
     let requests = [];
     if (fs.existsSync(otpFile)) {
       requests = JSON.parse(fs.readFileSync(otpFile, 'utf8'));
@@ -911,9 +919,16 @@ exports.verifyResetOtp = async (req, res) => {
       return res.status(400).json({ success: false, error: 'No active OTP requests found' });
     }
 
-    const requests = JSON.parse(fs.readFileSync(otpFile, 'utf8'));
+    let requests = [];
+    try {
+      requests = JSON.parse(fs.readFileSync(otpFile, 'utf8'));
+      if (!Array.isArray(requests)) requests = [];
+    } catch (e) {
+      requests = [];
+    }
+
     const requestIndex = requests.findIndex(r => 
-      r.userId === user._id && 
+      r.userId && r.userId.toString() === user._id.toString() && 
       new Date(r.expiresAt) > new Date() && 
       !r.verified
     );

@@ -25,6 +25,10 @@ const adSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  clickedBy: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'User'
+  }],
   clicks: {
     type: Number,
     default: 0

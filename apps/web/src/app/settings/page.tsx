@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings as SettingsIcon, Shield, Moon, Bell, Lock, Sun, ChevronRight, X, User as UserIcon, EyeOff, ShieldCheck, Key, Loader2 } from 'lucide-react';
+import { Settings as SettingsIcon, Shield, Moon, Bell, Lock, Sun, ChevronRight, X, User as UserIcon, EyeOff, ShieldCheck, Key, Loader2, Crown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -162,6 +162,46 @@ export default function Settings() {
             <ChevronRight className="w-4 h-4 text-gray-600" />
           </div>
         </div>
+
+        {/* Premium Exclusive Features */}
+        {user?.isPremium && (
+          <div className="glass rounded-2xl overflow-hidden border border-yellow-500/30 mb-6 bg-gradient-to-b from-yellow-900/10 to-transparent shadow-[0_0_20px_rgba(234,179,8,0.05)]">
+            <div className="p-4 border-b border-yellow-500/10 flex items-center justify-between bg-black/20">
+              <h2 className="font-bold text-yellow-400 flex items-center gap-2"><Crown className="w-4 h-4" /> VIP Settings</h2>
+              <span className="text-[10px] uppercase font-bold tracking-widest text-yellow-500/70">PRO</span>
+            </div>
+            
+            <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between border-b border-yellow-500/10">
+              <div>
+                <p className="font-bold text-white flex items-center gap-2">Ghost Mode (Stealth)</p>
+                <p className="text-xs text-gray-400 mt-1">Hide your online status and last seen from others.</p>
+              </div>
+              <div className="mt-3 sm:mt-0 w-12 h-6 rounded-full relative transition-colors duration-300 bg-gray-600 cursor-pointer border border-yellow-500/30 shadow-[0_0_10px_rgba(234,179,8,0.2)]">
+                <div className="absolute top-1 w-4 h-4 bg-yellow-400 rounded-full transition-all duration-300 left-1"></div>
+              </div>
+            </div>
+
+            <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between border-b border-yellow-500/10">
+              <div>
+                <p className="font-bold text-white flex items-center gap-2">Premium Royal Theme</p>
+                <p className="text-xs text-gray-400 mt-1">Switch app styling to Royal Obsidian & Gold.</p>
+              </div>
+              <div className="mt-3 sm:mt-0">
+                <button className="px-4 py-1.5 bg-yellow-500/20 text-yellow-400 text-xs font-bold rounded-full border border-yellow-500/30 hover:bg-yellow-500/30 transition">
+                  Activate Theme
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-white/5 cursor-pointer transition-colors">
+              <div>
+                <p className="font-bold text-yellow-400 flex items-center gap-2">24/7 Priority Support Line</p>
+                <p className="text-xs text-gray-400 mt-1">Direct contact line to Interakt engineering team.</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-yellow-600 mt-3 sm:mt-0" />
+            </div>
+          </div>
+        )}
 
         {/* Display Options */}
         <div className="glass rounded-2xl overflow-hidden border border-white/5">

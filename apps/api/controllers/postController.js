@@ -3,6 +3,8 @@ const User = require('../models/User');
 const { createNotification } = require('../utils/notifications');
 const { logActivity } = require('../utils/activityLogger');
 
+const { filterProfanity } = require('../utils/profanityFilter');
+
 exports.getPosts = async (req, res) => {
   try {
     const query = {};
@@ -32,7 +34,7 @@ exports.getPosts = async (req, res) => {
 
     const posts = await Post.find(query)
       .sort({ createdAt: -1 })
-      .populate('user', 'username name avatar isPrivate');
+      .populate('user', 'username name avatar isPrivate isPremium');
 
     res.status(200).json({ success: true, count: posts.length, data: posts });
   } catch (err) {
@@ -44,11 +46,12 @@ exports.createPost = async (req, res) => {
   try {
     const postData = {
       ...req.body,
+      text: filterProfanity(req.body.text),
       user: req.user.id,
       expireAt: new Date(Date.now() + 27 * 60 * 60 * 1000)
     };
     const post = await Post.create(postData);
-    const populated = await Post.findById(post._id).populate('user', 'username name avatar isPrivate');
+    const populated = await Post.findById(post._id).populate('user', 'username name avatar isPrivate isPremium');
     
     await logActivity(req.user.id, req.user.username, 'create_post', `Created post: "${post.text.slice(0, 50)}${post.text.length > 50 ? '...' : ''}"`, req.ip);
     res.status(201).json({ success: true, data: populated });

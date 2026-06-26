@@ -41,7 +41,7 @@ router.get('/notifications', protect, getNotifications);
 router.put('/notifications/read', protect, markNotificationsRead);
 
 router.get('/ads', getActiveAds);
-router.post('/ads/:id/click', trackAdClick);
+router.post('/ads/:id/click', protect, trackAdClick);
 router.post('/log-inspect', logInspectAttempt);
 
 module.exports = router;

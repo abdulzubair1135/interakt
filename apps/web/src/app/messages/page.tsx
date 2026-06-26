@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Send, Image as ImageIcon, MoreVertical, Phone, Video, Loader2, Users, Plus, X, Search as SearchIcon, MessageSquare, ArrowLeft, Trash2, Flag } from 'lucide-react';
+import { Search, Send, Image as ImageIcon, MoreVertical, Phone, Video, Loader2, Users, Plus, X, Search as SearchIcon, MessageSquare, ArrowLeft, Trash2, Flag, Crown } from 'lucide-react';
 import { useState, useEffect, useRef, Suspense } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
@@ -399,6 +399,7 @@ function MessagesContent() {
           ) : (
             messages.map((msg, index) => {
               const isMe = currentUser && msg.sender?._id === currentUser._id;
+              const isPremium = msg.sender?.isPremium || (isMe && currentUser?.isPremium);
               return (
                 <div key={msg._id || index} className={`flex ${isMe ? 'justify-end' : 'justify-start'} items-center gap-2 group/msg animate-slideIn`}>
                   {/* Actions for messages sent by me */}
@@ -415,13 +416,18 @@ function MessagesContent() {
                   )}
 
                   <div className={`max-w-[85%] md:max-w-[70%] p-3.5 px-4 rounded-2xl shadow-lg transition-all ${
-                    isMe 
-                      ? 'bg-gradient-to-br from-[var(--accent-purple)] to-[var(--accent-pink)] text-white rounded-tr-none shadow-[0_4px_15px_rgba(139,92,246,0.25)]' 
-                      : 'bg-white/10 dark:bg-white/5 backdrop-blur-md text-white border border-white/10 rounded-tl-none'
+                    isPremium
+                      ? isMe 
+                        ? 'bg-gradient-to-br from-yellow-500 to-amber-600 text-black font-medium rounded-tr-none shadow-[0_4px_15px_rgba(234,179,8,0.3)] border border-yellow-300' 
+                        : 'bg-gradient-to-br from-yellow-950/40 to-transparent backdrop-blur-md text-white border border-yellow-500/50 rounded-tl-none shadow-[0_4px_15px_rgba(234,179,8,0.1)]'
+                      : isMe 
+                        ? 'bg-gradient-to-br from-[var(--accent-purple)] to-[var(--accent-pink)] text-white rounded-tr-none shadow-[0_4px_15px_rgba(139,92,246,0.25)]' 
+                        : 'bg-white/10 dark:bg-white/5 backdrop-blur-md text-white border border-white/10 rounded-tl-none'
                   }`}>
                     {!isMe && (
-                      <p className="text-[10px] font-extrabold text-[var(--accent-pink)] mb-1 flex items-center gap-1">
+                      <p className={`text-[10px] font-extrabold mb-1 flex items-center gap-1 ${isPremium ? 'text-yellow-400 drop-shadow-[0_0_2px_rgba(234,179,8,0.5)]' : 'text-[var(--accent-pink)]'}`}>
                         <span>@{msg.sender?.username}</span>
+                        {isPremium && <Crown className="w-3 h-3 text-yellow-400" />}
                         {msg.sender?.role === 'admin' && (
                           <span className="text-[8px] bg-red-500/20 text-red-400 px-1 rounded font-mono uppercase tracking-widest border border-red-500/30">Admin</span>
                         )}

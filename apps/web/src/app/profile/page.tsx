@@ -131,7 +131,11 @@ export default function Profile() {
         )}
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="absolute -bottom-12 left-8 p-1 bg-[var(--background)] rounded-full">
-          <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gray-800 overflow-hidden border-2 border-[var(--accent-purple)] shadow-[0_0_20px_rgba(139,92,246,0.4)] relative">
+          <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-2 relative ${
+            profile.isPremium 
+              ? 'border-yellow-400 bg-yellow-900/20 shadow-[0_0_30px_rgba(234,179,8,0.5)] ring-4 ring-yellow-500/30' 
+              : 'bg-gray-800 border-[var(--accent-purple)] shadow-[0_0_20px_rgba(139,92,246,0.4)]'
+          }`}>
             <img src={profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile._id}`} alt={profile.username} className="w-full h-full object-cover" />
             <div className="absolute bottom-0 right-0 w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-lg">
               {profile.emoji || '🎓'}
@@ -142,9 +146,16 @@ export default function Profile() {
 
       <div className="flex justify-between items-start px-8 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-1 flex items-center gap-2">
-            {profile.name || profile.username}
+          <h1 className="text-3xl font-bold mb-1 flex items-center gap-2">
+            <span className={profile.isPremium ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.3)]' : 'text-white'}>
+              {profile.name || profile.username}
+            </span>
             <span className="text-lg opacity-80">{profile.emoji}</span>
+            {profile.isPremium && (
+              <span className="px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 text-[10px] font-black tracking-widest flex items-center gap-1 shadow-[0_0_10px_rgba(234,179,8,0.2)]">
+                <Crown className="w-3 h-3" /> PRO
+              </span>
+            )}
           </h1>
           <p className="text-gray-400 mb-4">@{profile.username} {profile.nickname && `• ${profile.nickname}`} • Joined {new Date(profile.createdAt).getFullYear()}</p>
           <p className="max-w-md text-sm text-gray-300">
@@ -181,7 +192,35 @@ export default function Profile() {
             <span className="hidden sm:inline">Logout</span>
           </button>
         </div>
+        </div>
       </div>
+
+      {/* VIP Profile Analytics (Premium Only) */}
+      {profile.isPremium && profile._id === user?._id && (
+        <div className="glass rounded-2xl p-6 border border-yellow-500/30 bg-gradient-to-br from-yellow-900/10 to-transparent shadow-[0_0_15px_rgba(234,179,8,0.05)] mb-8">
+          <h3 className="font-bold text-yellow-400 mb-4 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" /> VIP Profile Analytics
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
+            <div className="bg-black/20 rounded-xl p-4 border border-yellow-500/10 text-center">
+              <p className="text-3xl font-black text-white">{Math.floor(Math.random() * 500) + 124}</p>
+              <p className="text-[10px] text-yellow-500/80 uppercase tracking-widest font-bold mt-1">Profile Views</p>
+            </div>
+            <div className="bg-black/20 rounded-xl p-4 border border-yellow-500/10 text-center">
+              <p className="text-3xl font-black text-white">+{(Math.random() * 20 + 5).toFixed(1)}%</p>
+              <p className="text-[10px] text-yellow-500/80 uppercase tracking-widest font-bold mt-1">Engagement</p>
+            </div>
+            <div className="bg-black/20 rounded-xl p-4 border border-yellow-500/10 text-center">
+              <p className="text-3xl font-black text-white">{profile.followers?.length || 0}</p>
+              <p className="text-[10px] text-yellow-500/80 uppercase tracking-widest font-bold mt-1">Total Followers</p>
+            </div>
+            <div className="bg-black/20 rounded-xl p-4 border border-yellow-500/10 text-center">
+              <p className="text-3xl font-black text-white">Top 5%</p>
+              <p className="text-[10px] text-yellow-500/80 uppercase tracking-widest font-bold mt-1">Creator Rank</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex border-b border-white/10 mb-6 gap-2">
         <button 
@@ -234,6 +273,7 @@ export default function Profile() {
               category={post.category}
               isLikedByMe={post.likes?.includes(profile._id)}
               userId={post.user?._id || profile._id}
+              isAuthorPremium={post.user?.isPremium}
             />
           ))
         ) : (

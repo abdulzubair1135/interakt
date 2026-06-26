@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, Trash2, ShieldAlert, ShieldCheck, Loader2, RefreshCw, Key, 
@@ -42,10 +43,11 @@ export default function AdminDashboard() {
   // Ad Form State
   const [newAd, setNewAd] = useState({ company: '', title: '', description: '', image: '', link: '' });
   const [adSuccess, setAdSuccess] = useState(false);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
   
-  // Firewall State
   const [firewallMode, setFirewallMode] = useState('Standard');
   const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [activeDepartment, setActiveDepartment] = useState('god');
   const [rateLimiterState, setRateLimiterState] = useState('Enabled');
 
   useEffect(() => {
@@ -250,6 +252,21 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleAdImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Image must be under 2MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewAd({ ...newAd, image: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleCreateAd = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -329,10 +346,31 @@ export default function AdminDashboard() {
         </div>
       </motion.div>
 
+      {/* Department Tabs */}
+      <div className="flex flex-wrap gap-3 my-6">
+        {['god', 'users', 'ads', 'security'].map(dept => (
+          <button
+            key={dept}
+            onClick={() => setActiveDepartment(dept)}
+            className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all ${
+              activeDepartment === dept 
+                ? 'bg-red-500/20 text-red-400 border border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' 
+                : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10'
+            }`}
+          >
+            {dept === 'god' ? '⚡ God Panel (Overview)' : 
+             dept === 'users' ? '👥 User Management' : 
+             dept === 'ads' ? '💰 Ads & Revenue' : 
+             '🛡️ Security & System'}
+          </button>
+        ))}
+      </div>
+
       {/* Stats Cards Section (2 to 9: 8 Panels) */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {/* 2 */}
-        <div className="glass rounded-2xl p-5 border border-white/5 bg-white/20">
+      {activeDepartment === 'god' && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* 2 */}
+        <div onClick={() => setActiveModal('members')} className="glass rounded-2xl p-5 border border-white/5 bg-gradient-to-br from-purple-500/10 to-transparent shadow-xl shadow-purple-900/10 hover:from-purple-500/20 transition-all border-purple-500/20 cursor-pointer">
           <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Total Members</p>
           <p className="text-3xl font-black text-white mt-1">{users.length}</p>
           <div className="flex items-center space-x-1.5 text-[10px] text-purple-400 mt-2">
@@ -342,7 +380,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* 3 */}
-        <div className="glass rounded-2xl p-5 border border-white/5 bg-white/20">
+        <div onClick={() => setActiveModal('posts')} className="glass rounded-2xl p-5 border border-white/5 bg-gradient-to-br from-purple-500/10 to-transparent shadow-xl shadow-purple-900/10 hover:from-purple-500/20 transition-all border-purple-500/20 cursor-pointer">
           <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Active Posts</p>
           <p className="text-3xl font-black text-white mt-1">{posts.length}</p>
           <div className="flex items-center space-x-1.5 text-[10px] text-blue-400 mt-2">
@@ -352,7 +390,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* 4 */}
-        <div className="glass rounded-2xl p-5 border border-white/5 bg-white/20">
+        <div onClick={() => setActiveModal('premium')} className="glass rounded-2xl p-5 border border-white/5 bg-gradient-to-br from-purple-500/10 to-transparent shadow-xl shadow-purple-900/10 hover:from-purple-500/20 transition-all border-purple-500/20 cursor-pointer">
           <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Premium Users</p>
           <p className="text-3xl font-black text-white mt-1">{premiumUsers.length}</p>
           <div className="flex items-center space-x-1.5 text-[10px] text-yellow-400 mt-2">
@@ -362,7 +400,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* 5 */}
-        <div className="glass rounded-2xl p-5 border border-white/5 bg-white/20">
+        <div onClick={() => setActiveModal('hacks')} className="glass rounded-2xl p-5 border border-white/5 bg-gradient-to-br from-purple-500/10 to-transparent shadow-xl shadow-purple-900/10 hover:from-purple-500/20 transition-all border-purple-500/20 cursor-pointer">
           <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Hack Attempts</p>
           <p className="text-3xl font-black text-red-500 mt-1">{inspectLogs.length}</p>
           <div className="flex items-center space-x-1.5 text-[10px] text-red-400 mt-2 animate-pulse">
@@ -372,7 +410,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* 6 */}
-        <div className="glass rounded-2xl p-5 border border-white/5 bg-white/20">
+        <div onClick={() => setActiveModal('otp')} className="glass rounded-2xl p-5 border border-white/5 bg-gradient-to-br from-purple-500/10 to-transparent shadow-xl shadow-purple-900/10 hover:from-purple-500/20 transition-all border-purple-500/20 cursor-pointer">
           <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">OTP Requests</p>
           <p className="text-3xl font-black text-white mt-1">{otpRequests.length}</p>
           <div className="flex items-center space-x-1.5 text-[10px] text-purple-400 mt-2">
@@ -382,7 +420,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* 7 */}
-        <div className="glass rounded-2xl p-5 border border-white/5 bg-white/20">
+        <div className="glass rounded-2xl p-5 border border-white/5 bg-gradient-to-br from-purple-500/10 to-transparent shadow-xl shadow-purple-900/10 hover:from-purple-500/20 transition-all border-purple-500/20">
           <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Reports Active</p>
           <p className="text-3xl font-black text-amber-500 mt-1">{reports.length}</p>
           <div className="flex items-center space-x-1.5 text-[10px] text-amber-400 mt-2">
@@ -392,7 +430,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* 8 */}
-        <div className="glass rounded-2xl p-5 border border-white/5 bg-white/20">
+        <div className="glass rounded-2xl p-5 border border-white/5 bg-gradient-to-br from-purple-500/10 to-transparent shadow-xl shadow-purple-900/10 hover:from-purple-500/20 transition-all border-purple-500/20">
           <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Sponsored Ads</p>
           <p className="text-3xl font-black text-white mt-1">{ads.length}</p>
           <div className="flex items-center space-x-1.5 text-[10px] text-green-400 mt-2">
@@ -402,7 +440,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* 9 */}
-        <div className="glass rounded-2xl p-5 border border-white/5 bg-white/20">
+        <div className="glass rounded-2xl p-5 border border-white/5 bg-gradient-to-br from-purple-500/10 to-transparent shadow-xl shadow-purple-900/10 hover:from-purple-500/20 transition-all border-purple-500/20">
           <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Banned Users</p>
           <p className="text-3xl font-black text-white mt-1">{bannedUsers.length}</p>
           <div className="flex items-center space-x-1.5 text-[10px] text-purple-400 mt-2">
@@ -410,7 +448,8 @@ export default function AdminDashboard() {
             <span>Restricted login</span>
           </div>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Grid: 20 Panels detailed distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -524,6 +563,7 @@ export default function AdminDashboard() {
                 <div key={req._id || idx} className="p-3 bg-purple-950/10 border border-purple-500/20 rounded-xl flex justify-between items-center text-xs">
                   <div>
                     <p className="font-bold text-white">{req.username}</p>
+                    {req.phone && <p className="text-[10px] text-green-400">📞 {req.phone}</p>}
                     <p className="text-[10px] text-purple-300">{getRemainingTime(req.expiresAt)}</p>
                   </div>
                   <div className="flex items-center space-x-2 bg-purple-500/20 px-3 py-1 rounded-lg text-white font-mono font-black">
@@ -623,6 +663,11 @@ export default function AdminDashboard() {
                     <span>Sender: @{rep.senderUser?.username}</span>
                     <span>Reporter: @{rep.reporterUser?.username}</span>
                   </div>
+                  <div className="mt-2 pt-2 border-t border-white/5 flex gap-2">
+                     <Link href="/chat" className="text-purple-400 hover:text-purple-300 text-[10px] flex items-center gap-1 font-bold">
+                       <MessageSquare className="w-3 h-3" /> Go to Chat (God Mode)
+                     </Link>
+                  </div>
                 </div>
               ))}
               {reports.length === 0 && (
@@ -669,15 +714,30 @@ export default function AdminDashboard() {
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none"
                 required
               />
-              <div className="grid grid-cols-2 gap-3">
-                <input 
-                  type="text" 
-                  value={newAd.image}
-                  onChange={e => setNewAd({...newAd, image: e.target.value})}
-                  placeholder="Image URL or Icon Emoji (e.g. 🎒)" 
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-2 relative group hover:border-purple-400 transition-colors">
+                  {newAd.image && newAd.image.startsWith('data:image') ? (
+                    <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0 border border-white/20">
+                      <img src={newAd.image} alt="Ad preview" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 rounded flex-shrink-0 border border-dashed border-white/20 flex items-center justify-center bg-black/20">
+                      <Image className="w-5 h-5 text-gray-400 group-hover:text-purple-400" />
+                    </div>
+                  )}
+                  <div className="relative flex-1 h-full flex flex-col justify-center">
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleAdImageUpload}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    />
+                    <span className="text-xs font-bold text-white group-hover:text-purple-300 transition-colors">
+                      {newAd.image ? 'Change Local Image' : 'Upload Local Image'}
+                    </span>
+                    <span className="text-[9px] text-gray-400">Supported: JPG, PNG (Max 2MB)</span>
+                  </div>
+                </div>
                 <input 
                   type="text" 
                   value={newAd.link}
@@ -699,15 +759,30 @@ export default function AdminDashboard() {
             <div className="space-y-3 max-h-[200px] overflow-y-auto pr-1 scrollbar-thin">
               {ads.map((ad, idx) => (
                 <div key={ad._id || idx} className="p-3 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between text-xs">
-                  <div>
-                    <p className="font-bold text-white">{ad.title}</p>
+                  <div className="flex-1">
+                    <p className="font-bold text-white flex items-center gap-2">
+                      {ad.image && ad.image.startsWith('data:image') && (
+                        <img src={ad.image} alt="Ad" className="w-5 h-5 rounded object-cover" />
+                      )}
+                      {ad.title}
+                    </p>
                     <p className="text-[10px] text-gray-400">By {ad.company}</p>
-                    <div className="flex gap-3 text-[9px] text-purple-300 mt-1">
-                      <span>👁️ {ad.impressions || 0} impressions</span>
-                      <span>🖱️ {ad.clicks || 0} clicks</span>
+                    <div className="flex flex-col gap-1 mt-1">
+                      <div className="flex gap-3 text-[9px] text-purple-300">
+                        <span>👁️ {ad.impressions || 0} impressions</span>
+                        <span>🖱️ {ad.clicks || 0} clicks</span>
+                      </div>
+                      {ad.clickedBy && ad.clickedBy.length > 0 && (
+                        <div className="text-[9px] text-gray-500 mt-1 flex flex-wrap gap-1">
+                          <span className="text-gray-400">Clicked by:</span>
+                          {ad.clickedBy.map((user: any, i: number) => (
+                            <span key={i} className="bg-white/5 px-1.5 py-0.5 rounded text-gray-300">@{user.username || 'unknown'}</span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <button onClick={() => handleDeleteAd(ad._id)} className="p-1 bg-red-500/20 text-red-400 hover:text-red-300 rounded">
+                  <button onClick={() => handleDeleteAd(ad._id)} className="p-1 bg-red-500/20 text-red-400 hover:text-red-300 rounded ml-2 flex-shrink-0">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -806,9 +881,255 @@ export default function AdminDashboard() {
             </div>
           </div>
 
+          {/* New Panel 1: System Memory & CPU Analytics */}
+          <div className="glass rounded-2xl p-6 border border-white/5">
+            <h2 className="text-lg font-bold text-white mb-4">System Memory & CPU Analytics</h2>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-xs text-gray-400 mb-1">
+                  <span>CPU Usage (Core 1-4)</span>
+                  <span className="text-green-400">12% Stable</span>
+                </div>
+                <div className="w-full bg-white/5 rounded-full h-2">
+                  <div className="bg-green-500 h-2 rounded-full" style={{ width: '12%' }}></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs text-gray-400 mb-1">
+                  <span>RAM Allocation</span>
+                  <span className="text-yellow-400">2.1GB / 8GB</span>
+                </div>
+                <div className="w-full bg-white/5 rounded-full h-2">
+                  <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '26%' }}></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs text-gray-400 mb-1">
+                  <span>Network Bandwidth</span>
+                  <span className="text-purple-400">45 Mbps</span>
+                </div>
+                <div className="w-full bg-white/5 rounded-full h-2">
+                  <div className="bg-purple-500 h-2 rounded-full" style={{ width: '45%' }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* New Panel 2: Shadow Banned Entities */}
+          <div className="glass rounded-2xl p-6 border border-white/5">
+            <h2 className="text-lg font-bold text-white mb-4">Shadow Banned Entities</h2>
+            <div className="space-y-2">
+              <div className="p-3 bg-red-950/20 border border-red-500/20 rounded-xl text-xs flex justify-between items-center">
+                <span className="text-red-400 font-bold">@spammer_bot99</span>
+                <span className="text-gray-500 text-[10px]">Shadow Banned (Auto)</span>
+              </div>
+              <div className="p-3 bg-red-950/20 border border-red-500/20 rounded-xl text-xs flex justify-between items-center">
+                <span className="text-red-400 font-bold">@fake_acc_xyz</span>
+                <span className="text-gray-500 text-[10px]">Shadow Banned (Manual)</span>
+              </div>
+              <div className="p-3 bg-white/5 border border-white/5 rounded-xl text-xs text-center text-gray-500 italic">
+                +14 more entities in quarantine
+              </div>
+            </div>
+          </div>
+
+          {/* New Panel 3: Content Keyword Filter Settings */}
+          <div className="glass rounded-2xl p-6 border border-white/5">
+            <h2 className="text-lg font-bold text-white mb-4">Content Keyword Filter</h2>
+            <p className="text-xs text-gray-400 mb-3">Auto-flag or block messages containing these blacklisted words.</p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {['spam', 'scam', 'hack', 'free followers', 'crypto link'].map(word => (
+                <span key={word} className="px-2 py-1 bg-red-500/10 border border-red-500/30 rounded text-red-300 text-[10px] font-mono">
+                  {word} <X className="w-3 h-3 inline cursor-pointer hover:text-red-100" />
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input type="text" placeholder="Add new keyword..." className="flex-1 bg-white/5 border border-white/10 rounded px-3 py-1.5 text-xs text-white" />
+              <button className="px-3 py-1.5 bg-red-500/20 text-red-400 rounded text-xs font-bold hover:bg-red-500/30">Add</button>
+            </div>
+          </div>
+
+          {/* New Panel 4: Trending Hashtags Visualizer */}
+          <div className="glass rounded-2xl p-6 border border-white/5">
+            <h2 className="text-lg font-bold text-white mb-4">Trending Hashtags Analytics</h2>
+            <div className="space-y-3">
+              {[
+                { tag: '#college', count: 1245, trend: '+12%' },
+                { tag: '#exams', count: 892, trend: '+5%' },
+                { tag: '#project', count: 432, trend: '-2%' },
+                { tag: '#event', count: 321, trend: '+18%' }
+              ].map(item => (
+                <div key={item.tag} className="flex justify-between items-center text-xs">
+                  <span className="text-purple-300 font-bold">{item.tag}</span>
+                  <div className="flex gap-3">
+                    <span className="text-gray-400">{item.count} posts</span>
+                    <span className={item.trend.startsWith('+') ? 'text-green-400' : 'text-red-400'}>{item.trend}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* New Panel 5: Server Region Latency Monitor */}
+          <div className="glass rounded-2xl p-6 border border-white/5">
+            <h2 className="text-lg font-bold text-white mb-4">Server Region Latency</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+                <p className="text-[10px] text-gray-500 uppercase">US East (N. Virginia)</p>
+                <p className="text-lg font-bold text-green-400">24ms</p>
+              </div>
+              <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+                <p className="text-[10px] text-gray-500 uppercase">Europe (Frankfurt)</p>
+                <p className="text-lg font-bold text-yellow-400">89ms</p>
+              </div>
+              <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+                <p className="text-[10px] text-gray-500 uppercase">Asia (Mumbai)</p>
+                <p className="text-lg font-bold text-green-400">12ms</p>
+              </div>
+              <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+                <p className="text-[10px] text-gray-500 uppercase">Australia (Sydney)</p>
+                <p className="text-lg font-bold text-red-400">145ms</p>
+              </div>
+            </div>
+          </div>
+
+          {/* New Panel 6: Database Snapshot Controls */}
+          <div className="glass rounded-2xl p-6 border border-white/5">
+            <h2 className="text-lg font-bold text-white mb-4">Database Snapshot Station</h2>
+            <p className="text-xs text-gray-400 mb-4">Manual backup points for disaster recovery.</p>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center p-3 bg-white/5 rounded-xl text-xs">
+                <div>
+                  <p className="text-white font-bold">Auto-Backup (Daily)</p>
+                  <p className="text-gray-500 text-[10px]">Last run: 4 hours ago</p>
+                </div>
+                <button className="px-3 py-1 bg-white/10 rounded hover:bg-white/20">Restore</button>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-white/5 rounded-xl text-xs">
+                <div>
+                  <p className="text-white font-bold">Manual Backup 1</p>
+                  <p className="text-gray-500 text-[10px]">Created: 2 days ago</p>
+                </div>
+                <button className="px-3 py-1 bg-white/10 rounded hover:bg-white/20">Restore</button>
+              </div>
+              <button className="w-full py-2 mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 rounded text-xs font-bold text-white hover:opacity-90 transition">
+                Create New Snapshot
+              </button>
+            </div>
+          </div>
+
+          {/* New Panel 7: AI Moderation Engine */}
+          <div className="glass rounded-2xl p-6 border border-white/5">
+            <h2 className="text-lg font-bold text-white mb-4">AI Moderation Engine</h2>
+            <div className="flex items-center justify-between p-4 bg-purple-900/20 border border-purple-500/30 rounded-xl mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                <span className="text-sm font-bold text-purple-300">Engine Active</span>
+              </div>
+              <span className="text-xs text-gray-400">v4.2.1</span>
+            </div>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between text-gray-400">
+                <span>Images scanned today</span>
+                <span className="text-white font-bold">4,192</span>
+              </div>
+              <div className="flex justify-between text-gray-400">
+                <span>Auto-deleted NSFW</span>
+                <span className="text-white font-bold">23</span>
+              </div>
+              <div className="flex justify-between text-gray-400">
+                <span>Toxicity blocks</span>
+                <span className="text-white font-bold">148</span>
+              </div>
+            </div>
+          </div>
+
         </div>
 
       </div>
+
+      <AnimatePresence>
+        {activeModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setActiveModal(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="glass rounded-3xl p-6 border border-white/10 w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col relative"
+            >
+              <button 
+                onClick={() => setActiveModal(null)}
+                className="absolute top-4 right-4 p-2 bg-white/5 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              
+              <h2 className="text-xl font-bold text-white mb-6 uppercase tracking-wider">
+                {activeModal === 'members' && 'Total Members Detail'}
+                {activeModal === 'posts' && 'Active Posts Detail'}
+                {activeModal === 'premium' && 'Premium Users Detail'}
+                {activeModal === 'hacks' && 'Hack Attempts Detail'}
+                {activeModal === 'otp' && 'OTP Requests Detail'}
+              </h2>
+              
+              <div className="overflow-y-auto pr-2 space-y-3 flex-1 scrollbar-thin">
+                {activeModal === 'members' && users.map((u, i) => (
+                  <div key={i} className="p-3 bg-white/5 border border-white/5 rounded-xl flex items-center gap-3">
+                    <img src={u.avatar || 'https://via.placeholder.com/40'} className="w-10 h-10 rounded-full object-cover" />
+                    <div>
+                      <p className="text-white font-bold text-sm">@{u.username} {u.isPremium && <Star className="w-3 h-3 inline text-yellow-400" />}</p>
+                      <p className="text-xs text-gray-400">{u.email} • {u.uid || 'No UID'} • {u.phone || 'No Phone'}</p>
+                    </div>
+                  </div>
+                ))}
+                
+                {activeModal === 'posts' && posts.map((p, i) => (
+                  <div key={i} className="p-3 bg-white/5 border border-white/5 rounded-xl text-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <img src={p.user?.avatar || 'https://via.placeholder.com/20'} className="w-5 h-5 rounded-full object-cover" />
+                      <span className="text-gray-300 text-xs font-bold">@{p.user?.username}</span>
+                    </div>
+                    <p className="text-gray-200">{p.text}</p>
+                  </div>
+                ))}
+
+                {activeModal === 'premium' && premiumUsers.map((u, i) => (
+                  <div key={i} className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-center gap-3">
+                    <img src={u.avatar || 'https://via.placeholder.com/40'} className="w-10 h-10 rounded-full object-cover border border-yellow-500/50" />
+                    <div>
+                      <p className="text-yellow-400 font-bold text-sm">@{u.username}</p>
+                      <p className="text-xs text-yellow-500/70">{u.email}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {activeModal === 'hacks' && inspectLogs.map((l, i) => (
+                  <div key={i} className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-mono">
+                    <p className="text-red-400 font-bold mb-1">Target: @{l.username} • IP: {l.ip}</p>
+                    <p className="text-red-200/80">{l.details}</p>
+                  </div>
+                ))}
+                
+                {activeModal === 'otp' && otpRequests.map((r, i) => (
+                  <div key={i} className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl text-sm">
+                    <p className="text-white font-bold">@{r.username} <span className="text-gray-400 text-xs font-normal">({r.email})</span></p>
+                    {r.phone && <p className="text-green-400 text-xs mt-1">📞 {r.phone}</p>}
+                    <p className="text-purple-300 font-mono mt-1">OTP: {r.otp}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

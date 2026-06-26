@@ -329,6 +329,7 @@ export default function Home() {
                 tags={post.tags}
                 isLikedByMe={post.likes?.includes(user?._id || user?.id)}
                 userId={post.user?._id}
+                isAuthorPremium={post.user?.isPremium}
               />
               {!user?.isPremium && (index + 1) % 3 === 0 && <div className="mt-4"><AdBanner /></div>}
             </div>

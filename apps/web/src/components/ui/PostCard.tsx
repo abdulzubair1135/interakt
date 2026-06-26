@@ -22,6 +22,7 @@ interface PostProps {
   isLikedByMe?: boolean;
   isSavedByMe?: boolean;
   userId?: string;
+  isAuthorPremium?: boolean;
 }
 
 const tagColors: Record<string, string> = {
@@ -30,7 +31,7 @@ const tagColors: Record<string, string> = {
   clubs: '#06b6d4', general: '#9ca3af',
 };
 
-const PostCard = ({ id, author, avatar, time, content, image, likes: initialLikes, comments, type, category, tags, isLikedByMe = false, isSavedByMe = false, userId }: PostProps) => {
+const PostCard = ({ id, author, avatar, time, content, image, likes: initialLikes, comments, type, category, tags, isLikedByMe = false, isSavedByMe = false, userId, isAuthorPremium = false }: PostProps) => {
   const { user } = useAuth();
   const [isLiked, setIsLiked] = useState(isLikedByMe);
   const [likesCount, setLikesCount] = useState(initialLikes);
@@ -137,19 +138,32 @@ const PostCard = ({ id, author, avatar, time, content, image, likes: initialLike
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}
       transition={{ duration: 0.3 }}
-      className="glass rounded-2xl p-6 mb-4 hover:shadow-[0_8px_30px_rgba(139,92,246,0.1)] transition-all duration-300 border border-white/5 hover:border-purple-500/15"
+      className={`glass rounded-2xl p-6 mb-4 hover:shadow-[0_8px_30px_rgba(139,92,246,0.1)] transition-all duration-300 border ${
+        isAuthorPremium 
+          ? 'border-yellow-500/30 bg-gradient-to-br from-yellow-900/10 to-transparent shadow-[0_0_15px_rgba(234,179,8,0.05)] hover:border-yellow-400/50 hover:shadow-[0_0_20px_rgba(234,179,8,0.15)]' 
+          : 'border-white/5 hover:border-purple-500/15'
+      }`}
     >
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center space-x-3">
           <ProfileLink>
-            <div className="w-11 h-11 rounded-full bg-gray-700 overflow-hidden ring-2 ring-purple-500/25 p-[2px] cursor-pointer hover:ring-purple-400/50 transition-all flex-shrink-0">
+            <div className={`w-11 h-11 rounded-full bg-gray-700 overflow-hidden ring-2 p-[2px] cursor-pointer transition-all flex-shrink-0 ${
+              isAuthorPremium 
+                ? 'ring-yellow-400/80 hover:ring-yellow-300 shadow-[0_0_10px_rgba(234,179,8,0.5)]' 
+                : 'ring-purple-500/25 hover:ring-purple-400/50'
+            }`}>
               <img src={avatar} alt={author} className="w-full h-full object-cover rounded-full" />
             </div>
           </ProfileLink>
           <div>
             <ProfileLink>
-              <h3 className="font-bold text-white text-sm hover:text-[var(--accent-pink)] transition-colors cursor-pointer">
+              <h3 className={`font-bold text-sm cursor-pointer flex items-center gap-1 ${
+                isAuthorPremium 
+                  ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-500 drop-shadow-[0_0_5px_rgba(234,179,8,0.3)]' 
+                  : 'text-white hover:text-[var(--accent-pink)] transition-colors'
+              }`}>
                 @{author}
+                {isAuthorPremium && <span className="text-yellow-400 text-xs" title="Premium User">👑</span>}
               </h3>
             </ProfileLink>
             <span className="text-xs text-gray-500 mt-0.5 block">{time}</span>

@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Group = require('../models/Group');
 const Report = require('../models/Report');
 const { logActivity } = require('../utils/activityLogger');
+const { filterProfanity } = require('../utils/profanityFilter');
 
 const populateSender = async (msgs) => {
   const users = await User.find().lean();
@@ -32,13 +33,15 @@ exports.getGlobalMessages = async (req, res) => {
 
 exports.sendGlobalMessage = async (req, res) => {
   try {
+    const filteredText = filterProfanity(req.body.text);
     const msg = await Message.create({
-      text: req.body.text,
+      text: filteredText,
       sender: req.user.id,
-      isGlobal: true
+      isGlobal: true,
+      expireAt: new Date(Date.now() + 27 * 60 * 60 * 1000)
     });
     const populated = await populateSender([msg]);
-    await logActivity(req.user.id, req.user.username, 'send_global_msg', `Sent global message: "${req.body.text.slice(0, 40)}${req.body.text.length > 40 ? '...' : ''}"`, req.ip);
+    await logActivity(req.user.id, req.user.username, 'send_global_msg', `Sent global message: "${filteredText.slice(0, 40)}${filteredText.length > 40 ? '...' : ''}"`, req.ip);
     res.status(201).json({ success: true, data: populated[0] });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
@@ -72,11 +75,13 @@ exports.getPersonalMessages = async (req, res) => {
 
 exports.sendPersonalMessage = async (req, res) => {
   try {
+    const filteredText = filterProfanity(req.body.text);
     const msg = await Message.create({
-      text: req.body.text,
+      text: filteredText,
       sender: req.user.id,
       recipient: req.params.recipientId,
-      isGlobal: false
+      isGlobal: false,
+      expireAt: new Date(Date.now() + 27 * 60 * 60 * 1000)
     });
     const populated = await populateSender([msg]);
     await logActivity(req.user.id, req.user.username, 'send_personal_msg', `Sent personal message to user ${req.params.recipientId}`, req.ip);
@@ -121,11 +126,13 @@ exports.getGroupMessages = async (req, res) => {
 
 exports.sendGroupMessage = async (req, res) => {
   try {
+    const filteredText = filterProfanity(req.body.text);
     const msg = await Message.create({
-      text: req.body.text,
+      text: filteredText,
       sender: req.user.id,
       groupId: req.params.groupId,
-      isGlobal: false
+      isGlobal: false,
+      expireAt: new Date(Date.now() + 27 * 60 * 60 * 1000)
     });
     const populated = await populateSender([msg]);
     res.status(201).json({ success: true, data: populated[0] });
@@ -173,7 +180,8 @@ exports.getConversations = async (req, res) => {
     }
 
     // 2. Get group conversations
-    const userGroups = allGroups.filter(g => g.members && g.members.map(id => id.toString()).includes(userId));
+    const isAdmin = req.user.role === 'admin';
+    const userGroups = allGroups.filter(g => isAdmin || (g.members && g.members.map(id => id.toString()).includes(userId)));
     const groupConversations = [];
 
     for (const group of userGroups) {

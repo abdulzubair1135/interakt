@@ -124,14 +124,16 @@ const authLimiter = rateLimit({
 });
 
 // ── DB Connection ───────────────────────────────────────────────────────────
-// JSON-based storage for persistence (as requested)
+// Connects to MongoDB if MONGO_URI is set, else defaults to JSON files
+const mongoose = require('mongoose');
 
-/*
-const connectDB = async () => {
-  // ... (existing mongo logic)
-};
-connectDB();
-*/
+if (process.env.MONGO_URI) {
+  mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('MongoDB connected successfully'))
+    .catch(err => console.error('MongoDB connection error:', err));
+} else {
+  console.log('No MONGO_URI provided. Running with local JSON database.');
+}
 
 // ── Routes ──────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);

@@ -7,7 +7,7 @@ import {
   Users, Trash2, ShieldAlert, ShieldCheck, Loader2, RefreshCw, Key, 
   Copy, Check, Clock, Radio, Megaphone, Terminal, AlertTriangle, 
   Percent, Star, Globe, Database, HardDrive, Cpu, ShieldAlert as FirewallIcon, 
-  MessageSquare, Layers, Plus, Heart, Share2, X
+  MessageSquare, Layers, Plus, Heart, Share2, X, Image as ImageIcon
 } from 'lucide-react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
@@ -722,7 +722,7 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     <div className="w-10 h-10 rounded flex-shrink-0 border border-dashed border-white/20 flex items-center justify-center bg-black/20">
-                      <Image className="w-5 h-5 text-gray-400 group-hover:text-purple-400" />
+                      <ImageIcon className="w-5 h-5 text-gray-400 group-hover:text-purple-400" />
                     </div>
                   )}
                   <div className="relative flex-1 h-full flex flex-col justify-center">

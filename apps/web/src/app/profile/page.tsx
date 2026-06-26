@@ -192,7 +192,6 @@ export default function Profile() {
             <span className="hidden sm:inline">Logout</span>
           </button>
         </div>
-        </div>
       </div>
 
       {/* VIP Profile Analytics (Premium Only) */}

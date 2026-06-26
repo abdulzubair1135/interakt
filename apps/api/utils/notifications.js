@@ -1,12 +1,11 @@
-const JSONStore = require('./jsonStore');
-const notifStore = new JSONStore('notifications');
+const Notification = require('../models/Notification');
 
 exports.createNotification = async ({ user, sender, type, post }) => {
   try {
     // Don't notify if the user is the same as the sender
     if (user && sender && user.toString() === sender.toString()) return;
 
-    await notifStore.create({
+    await Notification.create({
       user,
       sender,
       type,

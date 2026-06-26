@@ -1,25 +1,29 @@
-const JSONStore = require('../utils/jsonStore');
-const messageStore = new JSONStore('messages');
-const userStore = new JSONStore('users');
-const groupStore = new JSONStore('groups');
+const Message = require('../models/Message');
+const User = require('../models/User');
+const Group = require('../models/Group');
+const Report = require('../models/Report');
 const { logActivity } = require('../utils/activityLogger');
 
 const populateSender = async (msgs) => {
-  const users = await userStore.read();
-  return msgs.map(m => ({
-    ...m,
-    sender: users.find(u => u._id === m.sender) || { username: 'Deleted User', avatar: '' },
-    viewedByUsers: (m.viewedBy || []).map(uid => {
-      const u = users.find(usr => usr._id === uid);
-      return u ? { _id: u._id, username: u.username, avatar: u.avatar } : null;
-    }).filter(Boolean)
-  }));
+  const users = await User.find().lean();
+  return msgs.map(m => {
+    const msgObj = m.toObject ? m.toObject() : m;
+    return {
+      ...msgObj,
+      sender: users.find(u => u._id.toString() === msgObj.sender?.toString()) || { username: 'Deleted User', avatar: '' },
+      viewedByUsers: (msgObj.viewedBy || []).map(uid => {
+        const u = users.find(usr => usr._id.toString() === uid.toString());
+        return u ? { _id: u._id, username: u.username, avatar: u.avatar } : null;
+      }).filter(Boolean)
+    };
+  });
 };
 
 exports.getGlobalMessages = async (req, res) => {
   try {
-    let msgs = await messageStore.find({ isGlobal: true });
-    msgs = await populateSender(msgs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)).slice(-50));
+    let msgs = await Message.find({ isGlobal: true }).sort({ createdAt: 1 });
+    msgs = msgs.slice(-50);
+    msgs = await populateSender(msgs);
     res.status(200).json({ success: true, data: msgs });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
@@ -28,7 +32,7 @@ exports.getGlobalMessages = async (req, res) => {
 
 exports.sendGlobalMessage = async (req, res) => {
   try {
-    const msg = await messageStore.create({
+    const msg = await Message.create({
       text: req.body.text,
       sender: req.user.id,
       isGlobal: true
@@ -45,32 +49,21 @@ exports.getPersonalMessages = async (req, res) => {
   try {
     const userId = req.user.id;
     const recipientId = req.params.recipientId;
-    const allMsgs = await messageStore.read();
     
     // Mark recipient's messages to me as viewed by me
-    let changed = false;
-    const updatedMsgs = allMsgs.map(m => {
-      if (m.recipient === userId && m.sender === recipientId) {
-        const viewedBy = m.viewedBy || [];
-        if (!viewedBy.includes(userId)) {
-          viewedBy.push(userId);
-          changed = true;
-          return { ...m, viewedBy };
-        }
-      }
-      return m;
-    });
-    
-    if (changed) {
-      await messageStore.write(updatedMsgs);
-    }
-
-    let msgs = updatedMsgs.filter(m => 
-      (m.sender === userId && m.recipient === recipientId) || 
-      (m.sender === recipientId && m.recipient === userId)
+    await Message.updateMany(
+      { recipient: userId, sender: recipientId, viewedBy: { $ne: userId } },
+      { $push: { viewedBy: userId } }
     );
 
-    msgs = await populateSender(msgs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
+    let msgs = await Message.find({
+      $or: [
+        { sender: userId, recipient: recipientId },
+        { sender: recipientId, recipient: userId }
+      ]
+    }).sort({ createdAt: 1 });
+
+    msgs = await populateSender(msgs);
     res.status(200).json({ success: true, data: msgs });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
@@ -79,7 +72,7 @@ exports.getPersonalMessages = async (req, res) => {
 
 exports.sendPersonalMessage = async (req, res) => {
   try {
-    const msg = await messageStore.create({
+    const msg = await Message.create({
       text: req.body.text,
       sender: req.user.id,
       recipient: req.params.recipientId,
@@ -96,7 +89,7 @@ exports.sendPersonalMessage = async (req, res) => {
 exports.createGroupChat = async (req, res) => {
   try {
     const { name, description, members } = req.body;
-    const group = await groupStore.create({
+    const group = await Group.create({
       name,
       description,
       admin: req.user.id,
@@ -111,28 +104,15 @@ exports.createGroupChat = async (req, res) => {
 exports.getGroupMessages = async (req, res) => {
   try {
     const userId = req.user.id;
-    const allMsgs = await messageStore.read();
     
     // Mark messages not sent by me in this group as viewed by me
-    let changed = false;
-    const updatedMsgs = allMsgs.map(m => {
-      if (m.groupId === req.params.groupId && m.sender !== userId) {
-        const viewedBy = m.viewedBy || [];
-        if (!viewedBy.includes(userId)) {
-          viewedBy.push(userId);
-          changed = true;
-          return { ...m, viewedBy };
-        }
-      }
-      return m;
-    });
+    await Message.updateMany(
+      { groupId: req.params.groupId, sender: { $ne: userId }, viewedBy: { $ne: userId } },
+      { $push: { viewedBy: userId } }
+    );
 
-    if (changed) {
-      await messageStore.write(updatedMsgs);
-    }
-
-    let msgs = updatedMsgs.filter(m => m.groupId === req.params.groupId);
-    msgs = await populateSender(msgs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
+    let msgs = await Message.find({ groupId: req.params.groupId }).sort({ createdAt: 1 });
+    msgs = await populateSender(msgs);
     res.status(200).json({ success: true, data: msgs });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
@@ -141,7 +121,7 @@ exports.getGroupMessages = async (req, res) => {
 
 exports.sendGroupMessage = async (req, res) => {
   try {
-    const msg = await messageStore.create({
+    const msg = await Message.create({
       text: req.body.text,
       sender: req.user.id,
       groupId: req.params.groupId,
@@ -157,13 +137,13 @@ exports.sendGroupMessage = async (req, res) => {
 exports.getConversations = async (req, res) => {
   try {
     const userId = req.user.id;
-    const allMsgs = await messageStore.read();
-    const allUsers = await userStore.read();
-    const allGroups = await groupStore.read();
+    const allMsgs = await Message.find().lean();
+    const allUsers = await User.find().lean();
+    const allGroups = await Group.find().lean();
 
     // 1. Get personal conversations
     const personalMsgs = allMsgs.filter(m => 
-      !m.isGlobal && !m.groupId && (m.sender === userId || m.recipient === userId)
+      !m.isGlobal && !m.groupId && (m.sender?.toString() === userId || m.recipient?.toString() === userId)
     );
 
     const personalChatsMap = new Map();
@@ -171,13 +151,13 @@ exports.getConversations = async (req, res) => {
     personalMsgs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
     personalMsgs.forEach(m => {
-      const otherId = m.sender === userId ? m.recipient : m.sender;
+      const otherId = m.sender?.toString() === userId ? m.recipient?.toString() : m.sender?.toString();
       personalChatsMap.set(otherId, m);
     });
 
     const personalConversations = [];
     for (const [otherId, lastMsg] of personalChatsMap.entries()) {
-      const user = allUsers.find(u => u._id === otherId);
+      const user = allUsers.find(u => u._id.toString() === otherId);
       if (user) {
         personalConversations.push({
           id: user._id,
@@ -193,11 +173,11 @@ exports.getConversations = async (req, res) => {
     }
 
     // 2. Get group conversations
-    const userGroups = allGroups.filter(g => g.members && g.members.includes(userId));
+    const userGroups = allGroups.filter(g => g.members && g.members.map(id => id.toString()).includes(userId));
     const groupConversations = [];
 
     for (const group of userGroups) {
-      const groupMsgs = allMsgs.filter(m => m.groupId === group._id);
+      const groupMsgs = allMsgs.filter(m => m.groupId?.toString() === group._id.toString());
       let lastMsgText = 'Group created';
       let lastMsgTime = new Date(group.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       let lastMsgAt = group.createdAt;
@@ -234,17 +214,17 @@ exports.getConversations = async (req, res) => {
 
 exports.deleteMessage = async (req, res) => {
   try {
-    const msg = await messageStore.findById(req.params.messageId);
+    const msg = await Message.findById(req.params.messageId);
     if (!msg) {
       return res.status(404).json({ success: false, error: 'Message not found' });
     }
     
     // User can delete their own message. Admin can delete any message.
-    if (msg.sender !== req.user.id && req.user.role !== 'admin') {
+    if (msg.sender.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(401).json({ success: false, error: 'Not authorized to delete this message' });
     }
     
-    await messageStore.findByIdAndDelete(req.params.messageId);
+    await Message.findByIdAndDelete(req.params.messageId);
     await logActivity(req.user.id, req.user.username, 'delete_msg', `Deleted message: "${msg.text.slice(0, 30)}"`, req.ip);
     
     res.status(200).json({ success: true, data: {} });
@@ -256,18 +236,17 @@ exports.deleteMessage = async (req, res) => {
 exports.reportMessage = async (req, res) => {
   try {
     const { reason } = req.body;
-    const msg = await messageStore.findById(req.params.messageId);
+    const msg = await Message.findById(req.params.messageId);
     if (!msg) return res.status(404).json({ success: false, error: 'Message not found' });
 
-    const reportStore = new JSONStore('reports');
-    const report = await reportStore.create({
+    const report = await Report.create({
       messageId: msg._id,
       text: msg.text,
       sender: msg.sender,
       recipient: msg.recipient,
       reportedBy: req.user.id,
       reason: reason || 'Inappropriate content',
-      createdAt: new Date().toISOString()
+      createdAt: new Date()
     });
 
     await logActivity(req.user.id, req.user.username, 'report_message', `Reported message: "${msg.text.slice(0, 30)}"`, req.ip);
@@ -279,16 +258,16 @@ exports.reportMessage = async (req, res) => {
 
 exports.joinGroup = async (req, res) => {
   try {
-    const group = await groupStore.findById(req.params.groupId);
+    const group = await Group.findById(req.params.groupId);
     if (!group) {
       return res.status(404).json({ success: false, error: 'Group not found' });
     }
     const members = group.members || [];
-    if (members.includes(req.user.id)) {
+    if (members.map(id => id.toString()).includes(req.user.id)) {
       return res.status(200).json({ success: true, data: group });
     }
-    group.members = [...members, req.user.id];
-    await groupStore.findByIdAndUpdate(group._id, { members: group.members });
+    group.members.push(req.user.id);
+    await group.save();
     res.status(200).json({ success: true, data: group });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });

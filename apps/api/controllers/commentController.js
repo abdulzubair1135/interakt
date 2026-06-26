@@ -1,41 +1,29 @@
-const JSONStore = require('../utils/jsonStore');
-const postStore = new JSONStore('posts');
-const userStore = new JSONStore('users');
+const Post = require('../models/Post');
+const User = require('../models/User');
 const { createNotification } = require('../utils/notifications');
 const { logActivity } = require('../utils/activityLogger');
-
-// Helper to populate user details for comments
-const populateComments = async (comments) => {
-  const users = await userStore.read();
-  return comments.map(c => ({
-    ...c,
-    user: users.find(u => u._id === c.user) || { username: 'Deleted User', avatar: '' }
-  }));
-};
 
 // @desc    Add a comment to a post
 // @route   POST /api/comments/:postId
 // @access  Private
 exports.addComment = async (req, res) => {
   try {
-    const post = await postStore.findById(req.params.postId);
+    const post = await Post.findById(req.params.postId);
 
     if (!post) {
       return res.status(404).json({ success: false, error: 'Post not found' });
     }
 
     const comment = {
-      _id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
       user: req.user.id,
-      text: req.body.text,
-      createdAt: new Date().toISOString()
+      text: req.body.text
     };
 
-    const comments = [...(post.comments || []), comment];
-    await postStore.findByIdAndUpdate(post._id, { comments });
+    post.comments.push(comment);
+    await post.save();
 
     // Create notification
-    if (post.user !== req.user.id) {
+    if (post.user.toString() !== req.user.id) {
       await createNotification({
         user: post.user,
         sender: req.user.id,
@@ -46,7 +34,9 @@ exports.addComment = async (req, res) => {
 
     await logActivity(req.user.id, req.user.username, 'add_comment', `Commented on post: "${req.body.text.slice(0, 40)}${req.body.text.length > 40 ? '...' : ''}"`, req.ip);
 
-    const populatedComments = await populateComments(comments);
+    const populatedPost = await Post.findById(post._id).populate('comments.user', 'username name avatar isPrivate');
+    const populatedComments = populatedPost.comments;
+
     res.status(201).json({ success: true, data: populatedComments });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
@@ -58,13 +48,13 @@ exports.addComment = async (req, res) => {
 // @access  Public
 exports.getPostComments = async (req, res) => {
   try {
-    const post = await postStore.findById(req.params.postId);
+    const post = await Post.findById(req.params.postId).populate('comments.user', 'username name avatar isPrivate');
+    
     if (!post) {
       return res.status(404).json({ success: false, error: 'Post not found' });
     }
 
-    const comments = post.comments || [];
-    const populatedComments = await populateComments(comments);
+    const populatedComments = post.comments || [];
     
     // Sort descending by default
     populatedComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));

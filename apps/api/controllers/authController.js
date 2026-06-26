@@ -1,12 +1,12 @@
-const JSONStore = require('../utils/jsonStore');
+const User = require('../models/User');
+const Notification = require('../models/Notification');
+const Ad = require('../models/Ad');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { createNotification } = require('../utils/notifications');
 const fs = require('fs');
 const path = require('path');
 const { logActivity } = require('../utils/activityLogger');
-
-const userStore = new JSONStore('users');
 
 // ──────────────────────────────────────────────────────────────
 // SECURITY: JWT_SECRET startup validation (Fix #2)
@@ -55,23 +55,7 @@ const pickSafePrivateFields = (user) => {
   return safe;
 };
 
-// ──────────────────────────────────────────────────────────────
-// SECURITY: PBKDF2 password hashing (Fix #1)
-// ──────────────────────────────────────────────────────────────
-const hashPassword = (password, salt) => {
-  if (!salt) {
-    salt = crypto.randomBytes(32).toString('hex');
-  }
-  const hash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
-  return `${salt}:${hash}`;
-};
-
-const verifyPassword = (password, storedHash) => {
-  if (!storedHash || !storedHash.includes(':')) return false;
-  const [salt, hash] = storedHash.split(':');
-  const testHash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
-  return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(testHash, 'hex'));
-};
+// Custom password hashing removed in favor of Mongoose pre-save hooks
 
 // ──────────────────────────────────────────────────────────────
 // SECURITY: Validation helpers (Fixes #4, #5, #6)
@@ -242,24 +226,24 @@ exports.register = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Your College UID is not registered/authorized. Outsiders are not allowed!' });
     }
 
-    const allUsers = await userStore.read();
-    const existingUser = allUsers.find(u => u.email === email);
-    const existingName = allUsers.find(u => u.username === username);
-    const existingUid = allUsers.find(u => u.uid === uid.trim());
+    const existingUser = await User.findOne({
+      $or: [
+        { email },
+        { username },
+        { uid: uid.trim() }
+      ]
+    });
 
-    if (existingUser || existingName || existingUid) {
+    if (existingUser) {
       return res.status(400).json({ success: false, error: 'User, Email, or College UID already exists' });
     }
 
-    // PBKDF2 hashing (Fix #1)
-    const hashedPassword = hashPassword(password);
-
-    const user = await userStore.create({
+    const user = await User.create({
       username,
       email,
       uid: uid.trim(),
       phone: phone.trim(),
-      password: hashedPassword,
+      password,
       name: '',
       nickname: '',
       emoji: '🎓',
@@ -270,7 +254,7 @@ exports.register = async (req, res) => {
       isPrivate: false,
       followers: [],
       following: [],
-      lastLogin: new Date().toISOString()
+      lastLogin: new Date()
     });
 
     console.log('User created successfully:', user._id);
@@ -304,13 +288,15 @@ exports.login = async (req, res) => {
       });
     }
 
-    const allUsers = await userStore.read();
-    const user = allUsers.find(u => 
-      (u.email && u.email.toLowerCase() === searchVal.toLowerCase()) || 
-      (u.phone && u.phone === searchVal) || 
-      (u.uid && u.uid.toUpperCase() === searchVal.toUpperCase()) ||
-      (u.username && u.username.toLowerCase() === searchVal.toLowerCase())
-    );
+    const searchRegex = new RegExp(`^${searchVal}$`, 'i');
+    const user = await User.findOne({
+      $or: [
+        { email: searchRegex },
+        { phone: searchVal },
+        { uid: searchRegex },
+        { username: searchRegex }
+      ]
+    }).select('+password');
 
     if (!user) {
       recordFailedLogin(clientIp);
@@ -318,20 +304,9 @@ exports.login = async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
 
-    // PBKDF2 verification (Fix #1) – also handle legacy SHA256 hashes for migration
     let passwordValid = false;
-    if (user.password && user.password.includes(':')) {
-      // New PBKDF2 format (salt:hash)
-      passwordValid = verifyPassword(password, user.password);
-    } else {
-      // Legacy SHA256 – verify and auto-upgrade
-      const legacyHash = crypto.createHash('sha256').update(password).digest('hex');
-      if (user.password === legacyHash) {
-        passwordValid = true;
-        // Auto-upgrade to PBKDF2
-        const upgradedHash = hashPassword(password);
-        await userStore.findByIdAndUpdate(user._id, { password: upgradedHash });
-      }
+    if (typeof user.matchPassword === 'function') {
+      passwordValid = await user.matchPassword(password);
     }
 
     if (!passwordValid) {
@@ -355,7 +330,7 @@ exports.login = async (req, res) => {
       }
     }
 
-    await userStore.findByIdAndUpdate(user._id, { lastLogin: new Date().toISOString() });
+    await User.findByIdAndUpdate(user._id, { lastLogin: new Date() });
     await logActivity(user._id, user.username, 'login', `User logged in successfully`, req.ip);
     sendTokenResponse(user, 200, res);
   } catch (err) {
@@ -369,7 +344,7 @@ exports.login = async (req, res) => {
 // ──────────────────────────────────────────────────────────────
 exports.getMe = async (req, res) => {
   try {
-    const user = await userStore.findById(req.user.id);
+    const user = await User.findById(req.user.id);
     res.status(200).json({ success: true, data: pickSafePrivateFields(user) });
   } catch (err) {
     res.status(400).json({ success: false, error: safeErrorMessage(err) });
@@ -381,7 +356,7 @@ exports.getMe = async (req, res) => {
 // ──────────────────────────────────────────────────────────────
 exports.getUserProfile = async (req, res) => {
   try {
-    const user = await userStore.findById(req.params.id);
+    const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
     const currentUserId = req.user ? req.user.id : null;
@@ -423,8 +398,8 @@ exports.getUserProfile = async (req, res) => {
 // ──────────────────────────────────────────────────────────────
 exports.toggleFollow = async (req, res) => {
   try {
-    const userToFollow = await userStore.findById(req.params.id);
-    const currentUser = await userStore.findById(req.user.id);
+    const userToFollow = await User.findById(req.params.id);
+    const currentUser = await User.findById(req.user.id);
 
     if (!userToFollow) return res.status(404).json({ success: false, error: 'User not found' });
     if (userToFollow._id === currentUser._id) return res.status(400).json({ success: false, error: 'Cannot follow yourself' });
@@ -439,8 +414,8 @@ exports.toggleFollow = async (req, res) => {
       userToFollow.followers = [...(userToFollow.followers || []), currentUser._id];
     }
 
-    await userStore.findByIdAndUpdate(currentUser._id, { following: currentUser.following });
-    await userStore.findByIdAndUpdate(userToFollow._id, { followers: userToFollow.followers });
+    await User.findByIdAndUpdate(currentUser._id, { following: currentUser.following });
+    await User.findByIdAndUpdate(userToFollow._id, { followers: userToFollow.followers });
 
     if (!isFollowing) {
       await createNotification({
@@ -473,7 +448,7 @@ exports.updateDetails = async (req, res) => {
       if (usernameErr) return res.status(400).json({ success: false, error: usernameErr });
     }
 
-    const user = await userStore.findByIdAndUpdate(req.user.id, updates);
+    const user = await User.findByIdAndUpdate(req.user.id, updates, { new: true });
     res.status(200).json({ success: true, data: pickSafePrivateFields(user) });
   } catch (error) {
     res.status(400).json({ success: false, error: safeErrorMessage(error) });
@@ -487,11 +462,9 @@ exports.searchUsers = async (req, res) => {
   try {
     const q = sanitize(req.query.q || '');
     if (!q) return res.status(200).json({ success: true, data: [] });
-    const allUsers = await userStore.read();
-    const users = allUsers
-      .filter(u => u.username.toLowerCase().includes(q.toLowerCase()))
-      .slice(0, 20)
-      .map(pickSafePublicFields);
+    const users = await User.find({ username: { $regex: q, $options: 'i' } })
+      .limit(20)
+      .then(res => res.map(pickSafePublicFields));
     res.status(200).json({ success: true, data: users });
   } catch (error) {
     res.status(500).json({ success: false, error: safeErrorMessage(error) });
@@ -503,11 +476,10 @@ exports.searchUsers = async (req, res) => {
 // ──────────────────────────────────────────────────────────────
 exports.getTrendingUsers = async (req, res) => {
   try {
-    const allUsers = await userStore.read();
-    const users = allUsers
-      .sort((a, b) => new Date(b.lastLogin) - new Date(a.lastLogin))
-      .slice(0, 3)
-      .map(pickSafePublicFields);
+    const users = await User.find()
+      .sort({ lastLogin: -1 })
+      .limit(3)
+      .then(res => res.map(pickSafePublicFields));
     res.status(200).json({ success: true, data: users });
   } catch (error) {
     res.status(500).json({ success: false, error: safeErrorMessage(error) });
@@ -519,9 +491,8 @@ exports.getTrendingUsers = async (req, res) => {
 // ──────────────────────────────────────────────────────────────
 exports.getFollowingUsers = async (req, res) => {
   try {
-    const currentUser = await userStore.findById(req.user.id);
-    const allUsers = await userStore.read();
-    const following = allUsers.filter(u => (currentUser.following || []).includes(u._id));
+    const currentUser = await User.findById(req.user.id);
+    const following = await User.find({ _id: { $in: currentUser.following || [] } });
     res.status(200).json({ success: true, data: following.map(pickSafePublicFields) });
   } catch (error) {
     res.status(500).json({ success: false, error: safeErrorMessage(error) });
@@ -534,7 +505,7 @@ exports.getFollowingUsers = async (req, res) => {
 exports.togglePrivate = async (req, res) => {
   try {
     const isPrivate = req.body.isPrivate !== undefined ? req.body.isPrivate : true;
-    const user = await userStore.findByIdAndUpdate(req.user.id, { isPrivate });
+    const user = await User.findByIdAndUpdate(req.user.id, { isPrivate }, { new: true });
     res.status(200).json({ success: true, isPrivate: user.isPrivate });
   } catch (error) {
     res.status(500).json({ success: false, error: safeErrorMessage(error) });
@@ -546,13 +517,9 @@ exports.togglePrivate = async (req, res) => {
 // ──────────────────────────────────────────────────────────────
 exports.getNotifications = async (req, res) => {
   try {
-    const notifStore = new JSONStore('notifications');
-    const allNotifs = await notifStore.find({ user: req.user.id });
-    const allUsers = await userStore.read();
-    const notifications = allNotifs.map(n => ({
-      ...n,
-      sender: allUsers.find(u => u._id === n.sender)
-    })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const notifications = await Notification.find({ user: req.user.id })
+      .populate('sender')
+      .sort({ createdAt: -1 });
     
     res.status(200).json({ success: true, data: notifications });
   } catch (error) {
@@ -565,10 +532,7 @@ exports.getNotifications = async (req, res) => {
 // ──────────────────────────────────────────────────────────────
 exports.markNotificationsRead = async (req, res) => {
   try {
-    const notifStore = new JSONStore('notifications');
-    const allNotifs = await notifStore.read();
-    const updated = allNotifs.map(n => n.user === req.user.id ? { ...n, isRead: true } : n);
-    await notifStore.write(updated);
+    await Notification.updateMany({ user: req.user.id }, { isRead: true });
     res.status(200).json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: safeErrorMessage(error) });
@@ -580,10 +544,9 @@ exports.markNotificationsRead = async (req, res) => {
 // ──────────────────────────────────────────────────────────────
 exports.getFollowers = async (req, res) => {
   try {
-    const user = await userStore.findById(req.params.id);
+    const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
-    const allUsers = await userStore.read();
-    const followers = allUsers.filter(u => (user.followers || []).includes(u._id));
+    const followers = await User.find({ _id: { $in: user.followers || [] } });
     res.status(200).json({ success: true, data: followers.map(pickSafePublicFields) });
   } catch (error) {
     res.status(500).json({ success: false, error: safeErrorMessage(error) });
@@ -595,10 +558,9 @@ exports.getFollowers = async (req, res) => {
 // ──────────────────────────────────────────────────────────────
 exports.getFollowing = async (req, res) => {
   try {
-    const user = await userStore.findById(req.params.id);
+    const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
-    const allUsers = await userStore.read();
-    const following = allUsers.filter(u => (user.following || []).includes(u._id));
+    const following = await User.find({ _id: { $in: user.following || [] } });
     res.status(200).json({ success: true, data: following.map(pickSafePublicFields) });
   } catch (error) {
     res.status(500).json({ success: false, error: safeErrorMessage(error) });
@@ -622,7 +584,7 @@ exports.setupAdmin = async (req, res) => {
       return res.status(403).json({ success: false, error: 'Invalid admin secret. This attempt has been logged.' });
     }
 
-    const user = await userStore.findByIdAndUpdate(req.user.id, { role: 'admin' });
+    const user = await User.findByIdAndUpdate(req.user.id, { role: 'admin' }, { new: true });
     await logActivity(req.user.id, user.username, 'admin_setup', 'User promoted to admin role', req.ip);
     res.status(200).json({ success: true, data: pickSafePrivateFields(user) });
   } catch (error) {
@@ -687,14 +649,13 @@ exports.googleAuth = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Invalid Google token: no email found' });
     }
 
-    const allUsers = await userStore.read();
-    let user = allUsers.find(u => u.email === email);
+    let user = await User.findOne({ email });
     if (!user) {
       const username = sanitize(email.split('@')[0]) + '_' + crypto.randomBytes(2).toString('hex');
-      user = await userStore.create({
+      user = await User.create({
         username,
         email: sanitize(email),
-        password: hashPassword(crypto.randomBytes(32).toString('hex')),
+        password: crypto.randomBytes(32).toString('hex'),
         name: sanitize(name || ''),
         nickname: '',
         emoji: '🎓',
@@ -705,10 +666,10 @@ exports.googleAuth = async (req, res) => {
         isPrivate: false,
         followers: [],
         following: [],
-        lastLogin: new Date().toISOString()
+        lastLogin: new Date()
       });
     } else {
-      await userStore.findByIdAndUpdate(user._id, { lastLogin: new Date().toISOString() });
+      await User.findByIdAndUpdate(user._id, { lastLogin: new Date() });
     }
     
     sendTokenResponse(user, 200, res);
@@ -724,7 +685,7 @@ exports.googleAuth = async (req, res) => {
 exports.setPremium = async (req, res) => {
   try {
     const { isPremium, duration } = req.body;
-    const user = await userStore.findById(req.params.id);
+    const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
     let premiumUntil = null;
@@ -763,10 +724,10 @@ exports.setPremium = async (req, res) => {
       logMsg = isPremiumValue ? 'Granted premium status' : 'Removed premium status';
     }
 
-    const updatedUser = await userStore.findByIdAndUpdate(req.params.id, { 
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, { 
       isPremium: isPremiumValue,
       premiumUntil
-    });
+    }, { new: true });
 
     await logActivity(req.user.id, req.user.username, 'set_premium', `${logMsg} for ${user.username}`, req.ip);
     res.status(200).json({ success: true, data: pickSafePrivateFields(updatedUser) });
@@ -780,18 +741,10 @@ exports.setPremium = async (req, res) => {
 // @access  Public
 exports.getActiveAds = async (req, res) => {
   try {
-    const adStore = new JSONStore('ads');
-    const allAds = await adStore.read();
-    const activeAds = allAds.filter(ad => ad.isActive);
+    const activeAds = await Ad.find({ isActive: true });
     
     // Increment impressions
-    const updated = allAds.map(ad => {
-      if (ad.isActive) {
-        return { ...ad, impressions: (ad.impressions || 0) + 1 };
-      }
-      return ad;
-    });
-    await adStore.write(updated);
+    await Ad.updateMany({ isActive: true }, { $inc: { impressions: 1 } });
     
     res.status(200).json({ success: true, data: activeAds });
   } catch (error) {
@@ -804,14 +757,10 @@ exports.getActiveAds = async (req, res) => {
 // @access  Public
 exports.trackAdClick = async (req, res) => {
   try {
-    const adStore = new JSONStore('ads');
-    const allAds = await adStore.read();
-    const adIndex = allAds.findIndex(ad => ad._id === req.params.id);
-    if (adIndex === -1) {
+    const ad = await Ad.findByIdAndUpdate(req.params.id, { $inc: { clicks: 1 } });
+    if (!ad) {
       return res.status(404).json({ success: false, error: 'Ad not found' });
     }
-    allAds[adIndex].clicks = (allAds[adIndex].clicks || 0) + 1;
-    await adStore.write(allAds);
     
     res.status(200).json({ success: true });
   } catch (error) {
@@ -868,13 +817,15 @@ exports.forgotPassword = async (req, res) => {
     }
 
     const searchVal = identifier.trim();
-    const allUsers = await userStore.read();
-    const user = allUsers.find(u => 
-      (u.email && u.email.toLowerCase() === searchVal.toLowerCase()) || 
-      (u.phone && u.phone === searchVal) || 
-      (u.uid && u.uid.toUpperCase() === searchVal.toUpperCase()) ||
-      (u.username && u.username.toLowerCase() === searchVal.toLowerCase())
-    );
+    const searchRegex = new RegExp(`^${searchVal}$`, 'i');
+    const user = await User.findOne({
+      $or: [
+        { email: searchRegex },
+        { phone: searchVal },
+        { uid: searchRegex },
+        { username: searchRegex }
+      ]
+    });
 
     if (!user) {
       return res.status(404).json({ success: false, error: 'No account found with this identifier' });
@@ -941,13 +892,15 @@ exports.verifyResetOtp = async (req, res) => {
     if (passwordErr) return res.status(400).json({ success: false, error: passwordErr });
 
     const searchVal = identifier.trim();
-    const allUsers = await userStore.read();
-    const user = allUsers.find(u => 
-      (u.email && u.email.toLowerCase() === searchVal.toLowerCase()) || 
-      (u.phone && u.phone === searchVal) || 
-      (u.uid && u.uid.toUpperCase() === searchVal.toUpperCase()) ||
-      (u.username && u.username.toLowerCase() === searchVal.toLowerCase())
-    );
+    const searchRegex = new RegExp(`^${searchVal}$`, 'i');
+    const user = await User.findOne({
+      $or: [
+        { email: searchRegex },
+        { phone: searchVal },
+        { uid: searchRegex },
+        { username: searchRegex }
+      ]
+    });
 
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
@@ -994,9 +947,9 @@ exports.verifyResetOtp = async (req, res) => {
       });
     }
 
-    // OTP is correct – reset password with PBKDF2
-    const hashedPassword = hashPassword(newPassword);
-    await userStore.findByIdAndUpdate(user._id, { password: hashedPassword });
+    // OTP is correct - update password
+    user.password = newPassword;
+    await user.save();
 
     // Mark OTP as verified/used
     requests[requestIndex].verified = true;

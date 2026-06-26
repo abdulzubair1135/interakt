@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
-const JSONStore = require('../utils/jsonStore');
-const userStore = new JSONStore('users');
+const User = require('../models/User');
 
 exports.protect = async (req, res, next) => {
   let token;
@@ -18,7 +17,7 @@ exports.protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
-    const user = await userStore.findById(decoded.id);
+    const user = await User.findById(decoded.id);
     if (!user) {
       return res.status(401).json({ success: false, error: 'Not authorized to access this route' });
     }
@@ -40,7 +39,7 @@ exports.protect = async (req, res, next) => {
       if (new Date(user.premiumUntil) < new Date()) {
         user.isPremium = false;
         user.premiumUntil = null;
-        await userStore.findByIdAndUpdate(user._id, { isPremium: false, premiumUntil: null });
+        await User.findByIdAndUpdate(user._id, { isPremium: false, premiumUntil: null });
       }
     }
 

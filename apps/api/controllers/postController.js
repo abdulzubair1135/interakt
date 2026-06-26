@@ -1,37 +1,38 @@
-const JSONStore = require('../utils/jsonStore');
+const Post = require('../models/Post');
+const User = require('../models/User');
 const { createNotification } = require('../utils/notifications');
 const { logActivity } = require('../utils/activityLogger');
 
-const postStore = new JSONStore('posts');
-const userStore = new JSONStore('users');
-
-const populateUser = async (data, field = 'user') => {
-  const users = await userStore.read();
-  if (Array.isArray(data)) {
-    return data.map(item => ({
-      ...item,
-      [field]: users.find(u => u._id === item[field]) || { username: 'Deleted User', avatar: '' }
-    }));
-  }
-  return { ...data, [field]: users.find(u => u._id === data[field]) };
-};
-
 exports.getPosts = async (req, res) => {
   try {
-    let posts = await postStore.read();
-    if (req.query.tag) posts = posts.filter(p => (p.tags || []).includes(req.query.tag));
-    if (req.query.category) posts = posts.filter(p => p.category === req.query.category);
+    const query = {};
+    if (req.query.tag) {
+      query.tags = req.query.tag;
+    }
+    if (req.query.category) {
+      query.category = req.query.category;
+    }
 
-    // Privacy Filter
     const currentUserId = req.user ? req.user.id : null;
-    const currentUser = currentUserId ? await userStore.findById(currentUserId) : null;
-    const allUsers = await userStore.read();
-    const publicUserIds = allUsers.filter(u => !u.isPrivate).map(u => u._id);
-    const followingIds = currentUser ? (currentUser.following || []) : [];
-    const allowedIds = [...publicUserIds, ...followingIds, currentUserId];
+    let allowedIds = [];
+    
+    // Privacy filter
+    if (currentUserId) {
+      const currentUser = await User.findById(currentUserId);
+      const followingIds = currentUser ? (currentUser.following || []) : [];
+      const publicUsers = await User.find({ isPrivate: false }).select('_id');
+      const publicUserIds = publicUsers.map(u => u._id);
+      allowedIds = [...publicUserIds, ...followingIds, currentUserId];
+    } else {
+      const publicUsers = await User.find({ isPrivate: false }).select('_id');
+      allowedIds = publicUsers.map(u => u._id);
+    }
 
-    posts = posts.filter(p => allowedIds.includes(p.user));
-    posts = await populateUser(posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+    query.user = { $in: allowedIds };
+
+    const posts = await Post.find(query)
+      .sort({ createdAt: -1 })
+      .populate('user', 'username name avatar isPrivate');
 
     res.status(200).json({ success: true, count: posts.length, data: posts });
   } catch (err) {
@@ -44,13 +45,11 @@ exports.createPost = async (req, res) => {
     const postData = {
       ...req.body,
       user: req.user.id,
-      likes: [],
-      saves: [],
-      comments: [],
-      expireAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      expireAt: new Date(Date.now() + 27 * 60 * 60 * 1000)
     };
-    const post = await postStore.create(postData);
-    const populated = await populateUser(post);
+    const post = await Post.create(postData);
+    const populated = await Post.findById(post._id).populate('user', 'username name avatar isPrivate');
+    
     await logActivity(req.user.id, req.user.username, 'create_post', `Created post: "${post.text.slice(0, 50)}${post.text.length > 50 ? '...' : ''}"`, req.ip);
     res.status(201).json({ success: true, data: populated });
   } catch (err) {
@@ -60,19 +59,19 @@ exports.createPost = async (req, res) => {
 
 exports.likePost = async (req, res) => {
   try {
-    const post = await postStore.findById(req.params.id);
+    const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ success: false, error: 'Post not found' });
 
     const userId = req.user.id;
-    const isLiked = (post.likes || []).includes(userId);
+    const isLiked = post.likes.includes(userId);
 
     if (isLiked) {
-      post.likes = post.likes.filter(id => id !== userId);
+      post.likes.pull(userId);
     } else {
-      post.likes = [...(post.likes || []), userId];
+      post.likes.push(userId);
     }
 
-    await postStore.findByIdAndUpdate(post._id, { likes: post.likes });
+    await post.save();
 
     if (!isLiked) {
       await createNotification({
@@ -91,19 +90,19 @@ exports.likePost = async (req, res) => {
 
 exports.savePost = async (req, res) => {
   try {
-    const post = await postStore.findById(req.params.id);
+    const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ success: false, error: 'Post not found' });
 
     const userId = req.user.id;
-    const isSaved = (post.saves || []).includes(userId);
+    const isSaved = post.saves.includes(userId);
 
     if (isSaved) {
-      post.saves = post.saves.filter(id => id !== userId);
+      post.saves.pull(userId);
     } else {
-      post.saves = [...(post.saves || []), userId];
+      post.saves.push(userId);
     }
 
-    await postStore.findByIdAndUpdate(post._id, { saves: post.saves });
+    await post.save();
     res.status(200).json({ success: true, saved: !isSaved, data: post.saves });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
@@ -112,19 +111,21 @@ exports.savePost = async (req, res) => {
 
 exports.getUserPosts = async (req, res) => {
   try {
-    const user = await userStore.findById(req.params.userId);
+    const user = await User.findById(req.params.userId);
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
     const currentUserId = req.user ? req.user.id : null;
-    const isFollowing = (user.followers || []).includes(currentUserId);
+    const isFollowing = user.followers.includes(currentUserId);
     const isOwner = currentUserId === req.params.userId;
 
     if (user.isPrivate && !isFollowing && !isOwner) {
       return res.status(200).json({ success: true, count: 0, data: [], isLocked: true });
     }
 
-    let posts = await postStore.find({ user: req.params.userId });
-    posts = await populateUser(posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+    const posts = await Post.find({ user: req.params.userId })
+      .sort({ createdAt: -1 })
+      .populate('user', 'username name avatar isPrivate');
+      
     res.status(200).json({ success: true, count: posts.length, data: posts });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
@@ -133,18 +134,16 @@ exports.getUserPosts = async (req, res) => {
 
 exports.addComment = async (req, res) => {
   try {
-    const post = await postStore.findById(req.params.id);
+    const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ success: false, error: 'Post not found' });
 
     const comment = {
-      _id: Date.now().toString(),
       user: req.user.id,
-      text: req.body.text,
-      createdAt: new Date().toISOString()
+      text: req.body.text
     };
 
-    const comments = [...(post.comments || []), comment];
-    await postStore.findByIdAndUpdate(post._id, { comments });
+    post.comments.push(comment);
+    await post.save();
 
     await createNotification({
       user: post.user,
@@ -153,13 +152,9 @@ exports.addComment = async (req, res) => {
       post: post._id
     });
 
-    const allUsers = await userStore.read();
-    const populatedComments = comments.map(c => ({
-      ...c,
-      user: allUsers.find(u => u._id === c.user)
-    }));
+    const populatedPost = await Post.findById(post._id).populate('comments.user', 'username name avatar isPrivate');
     
-    res.status(201).json({ success: true, data: populatedComments });
+    res.status(201).json({ success: true, data: populatedPost.comments });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
@@ -167,15 +162,10 @@ exports.addComment = async (req, res) => {
 
 exports.getComments = async (req, res) => {
   try {
-    const post = await postStore.findById(req.params.id);
+    const post = await Post.findById(req.params.id).populate('comments.user', 'username name avatar isPrivate');
     if (!post) return res.status(404).json({ success: false, error: 'Post not found' });
     
-    const allUsers = await userStore.read();
-    const populatedComments = (post.comments || []).map(c => ({
-      ...c,
-      user: allUsers.find(u => u._id === c.user)
-    }));
-    res.status(200).json({ success: true, count: populatedComments.length, data: populatedComments });
+    res.status(200).json({ success: true, count: post.comments.length, data: post.comments });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
@@ -186,9 +176,15 @@ exports.searchPosts = async (req, res) => {
     const { q } = req.query;
     if (!q) return res.status(200).json({ success: true, count: 0, data: [] });
     
-    let posts = await postStore.read();
-    posts = posts.filter(p => p.text.toLowerCase().includes(q.toLowerCase()) || (p.tags || []).some(t => t.toLowerCase().includes(q.toLowerCase())));
-    posts = await populateUser(posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+    const posts = await Post.find({
+      $or: [
+        { text: { $regex: q, $options: 'i' } },
+        { tags: { $regex: q, $options: 'i' } }
+      ]
+    })
+    .sort({ createdAt: -1 })
+    .populate('user', 'username name avatar isPrivate');
+    
     res.status(200).json({ success: true, count: posts.length, data: posts });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
@@ -197,14 +193,14 @@ exports.searchPosts = async (req, res) => {
 
 exports.deletePost = async (req, res) => {
   try {
-    const post = await postStore.findById(req.params.id);
+    const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ success: false, error: 'Post not found' });
     
-    if (post.user !== req.user.id && req.user.role !== 'admin') {
+    if (post.user.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(401).json({ success: false, error: 'Not authorized to delete this post' });
     }
     
-    await postStore.findByIdAndDelete(req.params.id);
+    await post.deleteOne();
     await logActivity(req.user.id, req.user.username, 'delete_post', `Deleted post: "${post.text.slice(0, 50)}${post.text.length > 50 ? '...' : ''}"`, req.ip);
     res.status(200).json({ success: true, data: {} });
   } catch (err) {
@@ -214,10 +210,11 @@ exports.deletePost = async (req, res) => {
 
 exports.getPost = async (req, res) => {
   try {
-    const post = await postStore.findById(req.params.id);
+    const post = await Post.findById(req.params.id)
+      .populate('user', 'username name avatar isPrivate')
+      .populate('comments.user', 'username name avatar isPrivate');
     if (!post) return res.status(404).json({ success: false, error: 'Post not found' });
-    const populated = await populateUser(post);
-    res.status(200).json({ success: true, data: populated });
+    res.status(200).json({ success: true, data: post });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
@@ -225,10 +222,10 @@ exports.getPost = async (req, res) => {
 
 exports.getSavedPosts = async (req, res) => {
   try {
-    const allPosts = await postStore.read();
-    let saved = allPosts.filter(p => (p.saves || []).includes(req.user.id));
-    saved = await populateUser(saved.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-    res.status(200).json({ success: true, count: saved.length, data: saved });
+    const savedPosts = await Post.find({ saves: req.user.id })
+      .sort({ createdAt: -1 })
+      .populate('user', 'username name avatar isPrivate');
+    res.status(200).json({ success: true, count: savedPosts.length, data: savedPosts });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
@@ -236,17 +233,14 @@ exports.getSavedPosts = async (req, res) => {
 
 exports.getLikedPosts = async (req, res) => {
   try {
-    const allPosts = await postStore.read();
-    let liked = allPosts.filter(p => (p.likes || []).includes(req.user.id));
-    liked = await populateUser(liked.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-    res.status(200).json({ success: true, count: liked.length, data: liked });
+    const likedPosts = await Post.find({ likes: req.user.id })
+      .sort({ createdAt: -1 })
+      .populate('user', 'username name avatar isPrivate');
+    res.status(200).json({ success: true, count: likedPosts.length, data: likedPosts });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
 };
-
-const fs = require('fs');
-const path = require('path');
 
 // @desc    Upload image (base64)
 // @route   POST /api/posts/upload
@@ -258,36 +252,11 @@ exports.uploadImage = async (req, res) => {
       return res.status(400).json({ success: false, error: 'No image data provided' });
     }
 
-    // Extract base64 content
-    const matches = base64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    let mimeType = 'image/png';
-    let base64Data = base64;
-
-    if (matches && matches.length === 3) {
-      mimeType = matches[1];
-      base64Data = matches[2];
-    }
-
-    // Determine extension
-    let ext = 'png';
-    if (mimeType.includes('jpeg') || mimeType.includes('jpg')) ext = 'jpg';
-    else if (mimeType.includes('gif')) ext = 'gif';
-    else if (mimeType.includes('webp')) ext = 'webp';
-
-    const filename = `${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${ext}`;
-    const uploadsDir = path.join(__dirname, '../public/uploads');
-
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-
-    const filepath = path.join(uploadsDir, filename);
-    fs.writeFileSync(filepath, Buffer.from(base64Data, 'base64'));
-
-    const fileUrl = `http://localhost:5005/uploads/${filename}`;
+    // Assign the base64 data to fileUrl directly to bypass local storage
+    const fileUrl = base64;
     
     // Log activity
-    await logActivity(req.user.id, req.user.username, 'upload_image', `Uploaded image: ${filename}`, req.ip);
+    await logActivity(req.user.id, req.user.username, 'upload_image', `Uploaded image directly to DB via base64`, req.ip);
 
     res.status(200).json({ success: true, url: fileUrl });
   } catch (error) {

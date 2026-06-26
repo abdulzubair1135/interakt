@@ -31,7 +31,7 @@ const messageSchema = new mongoose.Schema({
   },
   expireAt: {
     type: Date,
-    default: () => new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours from now
+    default: () => new Date(Date.now() + 27 * 60 * 60 * 1000) // 27 hours from now
   }
 }, {
   timestamps: true

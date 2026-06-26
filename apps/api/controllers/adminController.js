@@ -1,6 +1,7 @@
-const JSONStore = require('../utils/jsonStore');
-const userStore = new JSONStore('users');
-const postStore = new JSONStore('posts');
+const User = require('../models/User');
+const Post = require('../models/Post');
+const Report = require('../models/Report');
+const Ad = require('../models/Ad');
 const fs = require('fs');
 const path = require('path');
 
@@ -9,8 +10,7 @@ const path = require('path');
 // @access  Private/Admin
 exports.getAllUsers = async (req, res) => {
   try {
-    const allUsers = await userStore.read();
-    const users = allUsers.map(({ password, ...user }) => user);
+    const users = await User.find().select('-password').lean();
     res.status(200).json({ success: true, count: users.length, data: users });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -22,18 +22,16 @@ exports.getAllUsers = async (req, res) => {
 // @access  Private/Admin
 exports.deleteUser = async (req, res) => {
   try {
-    const user = await userStore.findById(req.params.id);
+    const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
     
     // Delete all posts by this user
-    const allPosts = await postStore.read();
-    const remainingPosts = allPosts.filter(p => p.user !== req.params.id);
-    await postStore.write(remainingPosts);
+    await Post.deleteMany({ user: req.params.id });
     
     // Delete user
-    await userStore.findByIdAndDelete(req.params.id);
+    await User.findByIdAndDelete(req.params.id);
 
     res.status(200).json({ success: true, data: {} });
   } catch (error) {
@@ -46,12 +44,12 @@ exports.deleteUser = async (req, res) => {
 // @access  Private/Admin
 exports.deletePost = async (req, res) => {
   try {
-    const post = await postStore.findById(req.params.id);
+    const post = await Post.findById(req.params.id);
     if (!post) {
       return res.status(404).json({ success: false, error: 'Post not found' });
     }
     
-    await postStore.findByIdAndDelete(req.params.id);
+    await Post.findByIdAndDelete(req.params.id);
 
     res.status(200).json({ success: true, data: {} });
   } catch (error) {
@@ -99,7 +97,7 @@ exports.getOtpRequests = async (req, res) => {
 exports.banUser = async (req, res) => {
   try {
     const { duration } = req.body; // '3_days', '10_days', '1_month', 'permanent', 'none'
-    const user = await userStore.findById(req.params.id);
+    const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
@@ -127,7 +125,7 @@ exports.banUser = async (req, res) => {
       logMsg = 'Unbanned user';
     }
 
-    const updatedUser = await userStore.findByIdAndUpdate(req.params.id, { bannedUntil });
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, { bannedUntil }, { new: true });
     const { logActivity } = require('../utils/activityLogger');
     await logActivity(req.user.id, req.user.username, 'ban_user', `${logMsg}: ${user.username}`, req.ip);
 
@@ -142,14 +140,13 @@ exports.banUser = async (req, res) => {
 // @access  Private/Admin
 exports.getReports = async (req, res) => {
   try {
-    const reportStore = new JSONStore('reports');
-    const reports = await reportStore.read();
-    const users = await userStore.read();
+    const reports = await Report.find().lean();
+    const users = await User.find().lean();
     const populated = reports.map(r => ({
       ...r,
-      senderUser: users.find(u => u._id === r.sender) || { username: 'Unknown' },
-      recipientUser: users.find(u => u._id === r.recipient) || { username: 'Unknown' },
-      reporterUser: users.find(u => u._id === r.reportedBy) || { username: 'Unknown' }
+      senderUser: users.find(u => u._id.toString() === r.sender?.toString()) || { username: 'Unknown' },
+      recipientUser: users.find(u => u._id.toString() === r.recipient?.toString()) || { username: 'Unknown' },
+      reporterUser: users.find(u => u._id.toString() === r.reportedBy?.toString()) || { username: 'Unknown' }
     }));
     res.status(200).json({ success: true, count: populated.length, data: populated });
   } catch (error) {
@@ -162,8 +159,7 @@ exports.getReports = async (req, res) => {
 // @access  Private/Admin
 exports.deleteReport = async (req, res) => {
   try {
-    const reportStore = new JSONStore('reports');
-    await reportStore.findByIdAndDelete(req.params.id);
+    await Report.findByIdAndDelete(req.params.id);
     res.status(200).json({ success: true, data: {} });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -175,9 +171,8 @@ exports.deleteReport = async (req, res) => {
 // @access  Private/Admin
 exports.createAd = async (req, res) => {
   try {
-    const adStore = new JSONStore('ads');
     const { company, title, description, image, link } = req.body;
-    const ad = await adStore.create({
+    const ad = await Ad.create({
       company,
       title,
       description,
@@ -200,8 +195,7 @@ exports.createAd = async (req, res) => {
 // @access  Private/Admin
 exports.deleteAd = async (req, res) => {
   try {
-    const adStore = new JSONStore('ads');
-    await adStore.findByIdAndDelete(req.params.id);
+    await Ad.findByIdAndDelete(req.params.id);
     res.status(200).json({ success: true, data: {} });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -213,11 +207,9 @@ exports.deleteAd = async (req, res) => {
 // @access  Private/Admin
 exports.getAdStats = async (req, res) => {
   try {
-    const adStore = new JSONStore('ads');
-    const ads = await adStore.read();
+    const ads = await Ad.find().lean();
     res.status(200).json({ success: true, count: ads.length, data: ads });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-

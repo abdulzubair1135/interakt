@@ -12,6 +12,7 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const User = require('./models/User');
 
 // Route imports
 const authRoutes = require('./routes/authRoutes');
@@ -132,7 +133,28 @@ const authLimiter = rateLimit({
 
 if (process.env.MONGO_URI) {
   mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB connected successfully'))
+    .then(() => {
+      console.log('MongoDB connected successfully');
+      const seedAdmin = async () => {
+        try {
+          const adminExists = await User.findOne({ email: 'admin@interakt.pro' });
+          if (!adminExists) {
+            const admin = new User({
+              username: 'admin',
+              name: 'Super Admin',
+              email: 'admin@interakt.pro',
+              password: 'Interakt@Admin_X2_Secure_99$!',
+              role: 'admin'
+            });
+            await admin.save();
+            console.log('High-security admin account created successfully.');
+          }
+        } catch (err) {
+          console.error('Error seeding admin account:', err);
+        }
+      };
+      seedAdmin();
+    })
     .catch(err => console.error('MongoDB connection error:', err));
 } else {
   console.log('No MONGO_URI provided. Running with local JSON database.');
@@ -200,68 +222,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// ── Auto-Delete Job ─────────────────────────────────────────────────────────
-const autoDeleteJob = async () => {
-  try {
-    const now = Date.now();
-    const age24h = 24 * 60 * 60 * 1000;
-    const age27h = 27 * 60 * 60 * 1000;
-
-    // 1. Delete Posts older than 24h
-    const postsPath = path.join(__dirname, 'data/posts.json');
-    if (fs.existsSync(postsPath)) {
-      try {
-        const posts = JSON.parse(fs.readFileSync(postsPath, 'utf8'));
-        const originalCount = posts.length;
-        const activePosts = posts.filter(
-          (p) => now - new Date(p.createdAt).getTime() < age24h
-        );
-        if (activePosts.length < originalCount) {
-          fs.writeFileSync(postsPath, JSON.stringify(activePosts, null, 2));
-        }
-      } catch (e) {
-        console.error('Error auto-deleting posts:', e.message);
-      }
-    }
-
-    // 2. Delete Messages older than 24h
-    const messagesPath = path.join(__dirname, 'data/messages.json');
-    if (fs.existsSync(messagesPath)) {
-      try {
-        const messages = JSON.parse(fs.readFileSync(messagesPath, 'utf8'));
-        const originalCount = messages.length;
-        const activeMessages = messages.filter(
-          (m) => now - new Date(m.createdAt).getTime() < age24h
-        );
-        if (activeMessages.length < originalCount) {
-          fs.writeFileSync(messagesPath, JSON.stringify(activeMessages, null, 2));
-        }
-      } catch (e) {
-        console.error('Error auto-deleting messages:', e.message);
-      }
-    }
-
-    // 3. Delete Uploaded files older than 27h
-    const uploadsDir = path.join(__dirname, 'public/uploads');
-    if (fs.existsSync(uploadsDir)) {
-      const files = fs.readdirSync(uploadsDir);
-      for (const file of files) {
-        const filePath = path.join(uploadsDir, file);
-        const stats = fs.statSync(filePath);
-        const age = now - stats.mtimeMs;
-        if (age > age27h) {
-          fs.unlinkSync(filePath);
-        }
-      }
-    }
-  } catch (err) {
-    console.error('Error in autoDeleteJob:', err.message);
-  }
-};
-
-// Run cleanup immediately on start, and then every 10 minutes
-autoDeleteJob();
-setInterval(autoDeleteJob, 10 * 60 * 1000);
 
 // ── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

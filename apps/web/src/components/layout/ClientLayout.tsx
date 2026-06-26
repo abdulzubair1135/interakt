@@ -114,7 +114,10 @@ export default function ClientLayout({
             >
               {leftOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
-            <span className="text-lg font-black text-gradient select-none">Interakt</span>
+            <div className="flex flex-col items-center justify-center select-none mt-1">
+              <span className="text-lg font-black text-gradient leading-none">Interakt</span>
+              <span className="text-[9px] text-gray-400 font-medium tracking-widest uppercase mt-0.5">by project x²</span>
+            </div>
             <button 
               onClick={() => { setRightOpen(!rightOpen); setLeftOpen(false); }} 
               className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-white active:bg-white/10 rounded-xl transition-all"

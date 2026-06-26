@@ -167,6 +167,11 @@ app.use('/api/comments', commentRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/admin', adminRoutes);
 
+// APK Download Route
+app.get('/api/download/apk', (req, res) => {
+  res.download(path.join(__dirname, 'public/uploads/interakt.apk'), 'interakt-app.apk');
+});
+
 // ── Socket.IO Auth Middleware ───────────────────────────────────────────────
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;

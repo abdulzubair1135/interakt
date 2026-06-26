@@ -53,7 +53,7 @@ postSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
 
 // Filter out posts older than 24 hours from all find queries
 postSchema.pre(/^find/, function(next) {
-  this.find({ createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } });
+  this.where({ createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } });
   next();
 });
 

@@ -55,14 +55,14 @@ exports.getPersonalMessages = async (req, res) => {
     
     // Mark recipient's messages to me as viewed by me
     await Message.updateMany(
-      { recipient: userId, sender: recipientId, viewedBy: { $ne: userId } },
+      { receiver: userId, sender: recipientId, viewedBy: { $ne: userId } },
       { $push: { viewedBy: userId } }
     );
 
     let msgs = await Message.find({
       $or: [
-        { sender: userId, recipient: recipientId },
-        { sender: recipientId, recipient: userId }
+        { sender: userId, receiver: recipientId },
+        { sender: recipientId, receiver: userId }
       ]
     }).sort({ createdAt: 1 });
 
@@ -79,7 +79,7 @@ exports.sendPersonalMessage = async (req, res) => {
     const msg = await Message.create({
       text: filteredText,
       sender: req.user.id,
-      recipient: req.params.recipientId,
+      receiver: req.params.recipientId,
       isGlobal: false,
       expireAt: new Date(Date.now() + 27 * 60 * 60 * 1000)
     });
@@ -112,11 +112,11 @@ exports.getGroupMessages = async (req, res) => {
     
     // Mark messages not sent by me in this group as viewed by me
     await Message.updateMany(
-      { groupId: req.params.groupId, sender: { $ne: userId }, viewedBy: { $ne: userId } },
+      { group: req.params.groupId, sender: { $ne: userId }, viewedBy: { $ne: userId } },
       { $push: { viewedBy: userId } }
     );
 
-    let msgs = await Message.find({ groupId: req.params.groupId }).sort({ createdAt: 1 });
+    let msgs = await Message.find({ group: req.params.groupId }).sort({ createdAt: 1 });
     msgs = await populateSender(msgs);
     res.status(200).json({ success: true, data: msgs });
   } catch (err) {
@@ -130,7 +130,7 @@ exports.sendGroupMessage = async (req, res) => {
     const msg = await Message.create({
       text: filteredText,
       sender: req.user.id,
-      groupId: req.params.groupId,
+      group: req.params.groupId,
       isGlobal: false,
       expireAt: new Date(Date.now() + 27 * 60 * 60 * 1000)
     });
@@ -150,7 +150,7 @@ exports.getConversations = async (req, res) => {
 
     // 1. Get personal conversations
     const personalMsgs = allMsgs.filter(m => 
-      !m.isGlobal && !m.groupId && (m.sender?.toString() === userId || m.recipient?.toString() === userId)
+      !m.isGlobal && !m.group && (m.sender?.toString() === userId || m.receiver?.toString() === userId)
     );
 
     const personalChatsMap = new Map();
@@ -158,7 +158,7 @@ exports.getConversations = async (req, res) => {
     personalMsgs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
     personalMsgs.forEach(m => {
-      const otherId = m.sender?.toString() === userId ? m.recipient?.toString() : m.sender?.toString();
+      const otherId = m.sender?.toString() === userId ? m.receiver?.toString() : m.sender?.toString();
       personalChatsMap.set(otherId, m);
     });
 
@@ -185,7 +185,7 @@ exports.getConversations = async (req, res) => {
     const groupConversations = [];
 
     for (const group of userGroups) {
-      const groupMsgs = allMsgs.filter(m => m.groupId?.toString() === group._id.toString());
+      const groupMsgs = allMsgs.filter(m => m.group?.toString() === group._id.toString());
       let lastMsgText = 'Group created';
       let lastMsgTime = new Date(group.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       let lastMsgAt = group.createdAt;
@@ -251,7 +251,7 @@ exports.reportMessage = async (req, res) => {
       messageId: msg._id,
       text: msg.text,
       sender: msg.sender,
-      recipient: msg.recipient,
+      recipient: msg.receiver,
       reportedBy: req.user.id,
       reason: reason || 'Inappropriate content',
       createdAt: new Date()

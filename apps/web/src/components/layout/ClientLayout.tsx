@@ -22,6 +22,11 @@ export default function ClientLayout({
   useEffect(() => {
     setLeftOpen(false);
     setRightOpen(false);
+    
+    // Register Service Worker for PWA
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed:', err));
+    }
   }, [pathname]);
 
   // Lock body scroll when a drawer is open on mobile

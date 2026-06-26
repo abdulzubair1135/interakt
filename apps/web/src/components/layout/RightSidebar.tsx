@@ -48,6 +48,7 @@ const RightSidebar = ({ isOpen, onClose, onSwitchToLeft }: RightSidebarProps) =>
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [trendingUsers, setTrendingUsers] = useState<any[]>([]);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
 
@@ -69,6 +70,29 @@ const RightSidebar = ({ isOpen, onClose, onSwitchToLeft }: RightSidebarProps) =>
     }, 8000);
     return () => clearInterval(adTimer);
   }, []);
+
+  // Handle PWA Installation
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    } else {
+      // Fallback for browsers that don't support PWA prompt or if already installed
+      alert('To install the app on Android: Tap the 3 dots menu in Chrome and select "Add to Home screen" or "Install app".');
+    }
+  };
 
   const fetchTrendingUsers = async () => {
     try {
@@ -225,13 +249,13 @@ const RightSidebar = ({ isOpen, onClose, onSwitchToLeft }: RightSidebarProps) =>
             </div>
             <h2 className="text-base font-bold text-white mb-1">Interakt App</h2>
             <p className="text-xs text-gray-400 mb-3">Experience god-level UI on your Android device.</p>
-            <a
-              href="https://interakt-api.onrender.com/api/download/apk"
+            <button
+              onClick={handleInstallClick}
               className="w-full py-2.5 bg-white text-black font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors text-sm"
             >
               <Zap className="w-4 h-4" />
-              Install APK
-            </a>
+              Install App
+            </button>
           </div>
         </motion.div>
 

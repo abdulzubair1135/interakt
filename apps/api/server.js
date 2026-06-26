@@ -21,6 +21,7 @@ const messageRoutes = require('./routes/messageRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy for Render
 const server = http.createServer(app);
 
 // ── CORS Whitelist ──────────────────────────────────────────────────────────

@@ -1,15 +1,17 @@
 "use client";
 
-import { User, Settings, Grid, Bookmark, Image as ImageIcon, Loader2, LogOut, X, Camera, Save, Smile, Users, Heart } from 'lucide-react';
+import { User, Settings, Grid, Bookmark, Image as ImageIcon, Loader2, LogOut, X, Camera, Save, Smile, Users, Heart, Crown, TrendingUp } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import PostCard from '@/components/ui/PostCard';
 import FollowListModal from '@/components/ui/FollowListModal';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function Profile() {
   const router = useRouter();
+  const { user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

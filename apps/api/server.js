@@ -125,7 +125,6 @@ const authLimiter = rateLimit({
 
 // ── DB Connection ───────────────────────────────────────────────────────────
 // Connects to MongoDB if MONGO_URI is set, else defaults to JSON files
-const mongoose = require('mongoose');
 
 if (process.env.MONGO_URI) {
   mongoose.connect(process.env.MONGO_URI)

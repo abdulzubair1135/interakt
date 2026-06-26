@@ -37,7 +37,10 @@ function MessagesContent() {
   }, [messages]);
 
   useEffect(() => {
-    socket = io('https://interakt-api.onrender.com');
+    const token = localStorage.getItem('campushub_token');
+    socket = io('https://interakt-api.onrender.com', {
+      auth: { token }
+    });
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('campushub_token');

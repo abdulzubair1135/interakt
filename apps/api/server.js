@@ -135,6 +135,11 @@ if (process.env.MONGO_URI) {
   mongoose.connect(process.env.MONGO_URI)
     .then(() => {
       console.log('MongoDB connected successfully');
+      
+      // Run one-time UID migration
+      const runUidMigration = require('./migrateUids');
+      runUidMigration();
+
       const seedAdmin = async () => {
         try {
           const adminExists = await User.findOne({ email: 'admin@interakt.pro' });

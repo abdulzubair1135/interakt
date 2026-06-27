@@ -5,6 +5,15 @@ const reportSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'Message'
   },
+  postId: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Post'
+  },
+  targetType: {
+    type: String,
+    enum: ['message', 'post'],
+    default: 'message'
+  },
   text: String,
   sender: {
     type: mongoose.Schema.ObjectId,

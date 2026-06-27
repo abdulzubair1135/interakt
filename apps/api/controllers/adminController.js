@@ -140,20 +140,66 @@ exports.banUser = async (req, res) => {
 // @access  Private/Admin
 exports.getReports = async (req, res) => {
   try {
-    const reports = await Report.find().lean();
-    const users = await User.find().lean();
-    const populated = reports.map(r => ({
-      ...r,
-      senderUser: users.find(u => u._id.toString() === r.sender?.toString()) || { username: 'Unknown' },
-      recipientUser: users.find(u => u._id.toString() === r.recipient?.toString()) || { username: 'Unknown' },
-      reporterUser: users.find(u => u._id.toString() === r.reportedBy?.toString()) || { username: 'Unknown' }
+    const Message = require('../models/Message');
+    const Post = require('../models/Post');
+    const reports = await Report.find().sort({ createdAt: -1 }).lean();
+    const users = await User.find().select('username name avatar').lean();
+
+    const populated = await Promise.all(reports.map(async (r) => {
+      const senderUser = users.find(u => u._id.toString() === r.sender?.toString()) || { username: 'Unknown' };
+      const recipientUser = users.find(u => u._id.toString() === r.recipient?.toString()) || { username: 'Unknown' };
+      const reporterUser = users.find(u => u._id.toString() === r.reportedBy?.toString()) || { username: 'Unknown' };
+
+      let context = [];
+      let targetPost = null;
+
+      if (r.targetType === 'post' && r.postId) {
+        targetPost = await Post.findById(r.postId).populate('user', 'username name avatar').lean();
+      } else if (r.targetType === 'message' || (!r.targetType && r.messageId)) {
+        const msg = await Message.findById(r.messageId).lean();
+        if (msg) {
+          let query = { createdAt: { $lte: msg.createdAt } };
+          if (msg.isGlobal) {
+            query.isGlobal = true;
+          } else if (msg.group) {
+            query.group = msg.group;
+          } else if (msg.receiver) {
+            query.$or = [
+              { sender: msg.sender, receiver: msg.receiver },
+              { sender: msg.receiver, receiver: msg.sender }
+            ];
+          }
+          
+          const rawContext = await Message.find(query)
+            .sort({ createdAt: -1 })
+            .limit(30)
+            .populate('sender', 'username name avatar')
+            .lean();
+            
+          context = rawContext.reverse().map(m => ({
+            _id: m._id,
+            text: m.text,
+            sender: m.sender,
+            createdAt: m.createdAt
+          }));
+        }
+      }
+
+      return {
+        ...r,
+        senderUser,
+        recipientUser,
+        reporterUser,
+        context,
+        targetPost
+      };
     }));
+
     res.status(200).json({ success: true, count: populated.length, data: populated });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-
 // @desc    Delete report
 // @route   DELETE /api/admin/reports/:id
 // @access  Private/Admin
@@ -171,7 +217,20 @@ exports.deleteReport = async (req, res) => {
 // @access  Private/Admin
 exports.createAd = async (req, res) => {
   try {
-    const { company, title, description, image, link } = req.body;
+    const { company, title, description, image, link, duration } = req.body;
+    let expiresAt = null;
+    if (duration === '1_day') {
+      expiresAt = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
+    } else if (duration === '3_days') {
+      expiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+    } else if (duration === '15_days') {
+      expiresAt = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
+    } else if (duration === '1_month') {
+      expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    } else if (duration === '1_year') {
+      expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+    }
+
     const ad = await Ad.create({
       company,
       title,
@@ -180,7 +239,8 @@ exports.createAd = async (req, res) => {
       link: link || '',
       clicks: 0,
       impressions: 0,
-      isActive: true
+      isActive: true,
+      expiresAt
     });
     const { logActivity } = require('../utils/activityLogger');
     await logActivity(req.user.id, req.user.username, 'create_ad', `Created ad: ${title} for ${company}`, req.ip);
@@ -189,7 +249,6 @@ exports.createAd = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-
 // @desc    Delete advertisement
 // @route   DELETE /api/admin/ads/:id
 // @access  Private/Admin

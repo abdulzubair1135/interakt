@@ -50,6 +50,7 @@ const RightSidebar = ({ isOpen, onClose, onSwitchToLeft }: RightSidebarProps) =>
   const [searchLoading, setSearchLoading] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [trendingUsers, setTrendingUsers] = useState<any[]>([]);
+  const [dbAds, setDbAds] = useState<any[]>([]);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
 
   useEffect(() => {
@@ -63,13 +64,43 @@ const RightSidebar = ({ isOpen, onClose, onSwitchToLeft }: RightSidebarProps) =>
     return () => clearTimeout(delayDebounceFn);
   }, [query]);
 
+  const fetchDbAds = async () => {
+    try {
+      const res = await axios.get('https://interakt-api.onrender.com/api/auth/ads');
+      if (res.data && res.data.success && res.data.data.length > 0) {
+        setDbAds(res.data.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch ads', err);
+    }
+  };
+
+  const handleAdClick = async (adId: string) => {
+    try {
+      const token = localStorage.getItem('campushub_token');
+      if (token) {
+        await axios.post(`https://interakt-api.onrender.com/api/auth/ads/${adId}/click`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+    } catch (err) {
+      console.error('Failed to track ad click', err);
+    }
+  };
+
   useEffect(() => {
     fetchTrendingUsers();
+    fetchDbAds();
+  }, []);
+
+  useEffect(() => {
+    const totalAds = dbAds.length > 0 ? dbAds.length : SPONSORED_ADS.length;
+    if (totalAds === 0) return;
     const adTimer = setInterval(() => {
-      setCurrentAdIndex(prev => (prev + 1) % SPONSORED_ADS.length);
+      setCurrentAdIndex(prev => (prev + 1) % totalAds);
     }, 8000);
     return () => clearInterval(adTimer);
-  }, []);
+  }, [dbAds]);
 
   // Handle PWA Installation
   useEffect(() => {
@@ -304,47 +335,68 @@ const RightSidebar = ({ isOpen, onClose, onSwitchToLeft }: RightSidebarProps) =>
               <p className="text-gray-500 text-sm text-center py-2">Loading trending users...</p>
             )}
           </div>
-        </motion.div>
-
-        {/* Sponsored Ad — Rotating */}
+        </motion.div>        {/* Sponsored Ad — Rotating */}
         {!user?.isPremium && (
           <AnimatePresence mode="wait">
-            <motion.a
-              key={currentAd.id}
-              href={currentAd.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block rounded-2xl p-5 relative overflow-hidden group cursor-pointer hover:border-purple-500/40 transition-all duration-500 border border-white/10 bg-white/[0.03]"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.5 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-md text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded z-10 border border-white/10">
-                <Sparkles className="w-2.5 h-2.5 text-yellow-400" />
-                <span className="text-white">Sponsored</span>
-              </div>
-              <div className={`w-full h-24 bg-gradient-to-r ${currentAd.gradient} rounded-xl mb-3 overflow-hidden relative flex items-center justify-center group-hover:scale-[1.02] transition-transform duration-500`}>
-                <span className="text-5xl filter drop-shadow-lg">{currentAd.icon}</span>
-              </div>
-              <h3 className="font-bold text-sm mb-1 text-white group-hover:text-[var(--accent-purple)] transition-colors">{currentAd.title}</h3>
-              <p className="text-xs text-gray-400 leading-relaxed mb-3">{currentAd.desc}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 px-3 py-1.5 rounded-full font-semibold border border-purple-500/20 group-hover:bg-purple-500/30 transition-colors">
-                  {currentAd.cta} →
-                </span>
-                <div className="flex gap-1">
-                  {SPONSORED_ADS.map((_, i) => (
-                    <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentAdIndex ? 'bg-purple-400 w-3' : 'bg-white/20'}`} />
-                  ))}
-                </div>
-              </div>
-            </motion.a>
+            {(() => {
+              const isDbAd = dbAds.length > 0 && dbAds[currentAdIndex];
+              const ad = isDbAd ? dbAds[currentAdIndex] : SPONSORED_ADS[currentAdIndex];
+              if (!ad) return null;
+
+              const adKey = isDbAd ? ad._id : ad.id;
+              const adHref = isDbAd ? ad.link : ad.url;
+              const adTitle = ad.title;
+              const adDesc = isDbAd ? ad.description : ad.desc;
+              const adCta = isDbAd ? `Visit ${ad.company}` : ad.cta;
+              const totalDots = dbAds.length > 0 ? dbAds.length : SPONSORED_ADS.length;
+
+              return (
+                <motion.a
+                  key={adKey}
+                  href={adHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => isDbAd && handleAdClick(ad._id)}
+                  className="block rounded-2xl p-5 relative overflow-hidden group cursor-pointer hover:border-purple-500/40 transition-all duration-500 border border-white/10 bg-white/[0.03]"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.5 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-md text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded z-10 border border-white/10">
+                    <Sparkles className="w-2.5 h-2.5 text-yellow-400" />
+                    <span className="text-white">Sponsored</span>
+                  </div>
+                  
+                  {isDbAd && ad.image ? (
+                    <div className="w-full h-24 rounded-xl mb-3 overflow-hidden relative flex items-center justify-center group-hover:scale-[1.02] transition-transform duration-500 border border-white/10 bg-black/40">
+                      <img src={ad.image} alt={ad.title} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className={`w-full h-24 bg-gradient-to-r ${ad.gradient || 'from-purple-500 to-pink-500'} rounded-xl mb-3 overflow-hidden relative flex items-center justify-center group-hover:scale-[1.02] transition-transform duration-500`}>
+                      <span className="text-5xl filter drop-shadow-lg">{ad.icon || '📢'}</span>
+                    </div>
+                  )}
+
+                  <h3 className="font-bold text-sm mb-1 text-white group-hover:text-[var(--accent-purple)] transition-colors">{adTitle}</h3>
+                  <p className="text-xs text-gray-400 leading-relaxed mb-3">{adDesc}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 px-3 py-1.5 rounded-full font-semibold border border-purple-500/20 group-hover:bg-purple-500/30 transition-colors">
+                      {adCta} →
+                    </span>
+                    <div className="flex gap-1">
+                      {Array.from({ length: totalDots }).map((_, i) => (
+                        <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentAdIndex ? 'bg-purple-400 w-3' : 'bg-white/20'}`} />
+                      ))}
+                    </div>
+                  </div>
+                </motion.a>
+              );
+            })()}
           </AnimatePresence>
         )}
-
         {/* Quick Tags */}
         <motion.div
           className="rounded-2xl p-5 bg-white/[0.03] border border-white/10"

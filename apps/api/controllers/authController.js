@@ -738,24 +738,30 @@ exports.setPremium = async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, error: safeErrorMessage(error) });
   }
-};
-
-// @desc    Get all active ads
+};// @desc    Get all active ads
 // @route   GET /api/auth/ads
 // @access  Public
 exports.getActiveAds = async (req, res) => {
   try {
-    const activeAds = await Ad.find({ isActive: true });
+    const activeAds = await Ad.find({
+      isActive: true,
+      $or: [
+        { expiresAt: { $exists: false } },
+        { expiresAt: null },
+        { expiresAt: { $gt: new Date() } }
+      ]
+    });
     
-    // Increment impressions
-    await Ad.updateMany({ isActive: true }, { $inc: { impressions: 1 } });
+    const activeIds = activeAds.map(ad => ad._id);
+    if (activeIds.length > 0) {
+      await Ad.updateMany({ _id: { $in: activeIds } }, { $inc: { impressions: 1 } });
+    }
     
     res.status(200).json({ success: true, data: activeAds });
   } catch (error) {
     res.status(500).json({ success: false, error: safeErrorMessage(error) });
   }
 };
-
 // @desc    Track ad click
 // @route   POST /api/auth/ads/:id/click
 // @access  Private

@@ -267,3 +267,27 @@ exports.uploadImage = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+exports.reportPost = async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ success: false, error: 'Post not found' });
+
+    const Report = require('../models/Report');
+    const report = await Report.create({
+      postId: post._id,
+      targetType: 'post',
+      text: post.text,
+      sender: post.user,
+      reportedBy: req.user.id,
+      reason: reason || 'Inappropriate content'
+    });
+
+    await logActivity(req.user.id, req.user.username, 'report_post', `Reported post: "${post.text.slice(0, 30)}"`, req.ip);
+    res.status(200).json({ success: true, data: report });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+};
+

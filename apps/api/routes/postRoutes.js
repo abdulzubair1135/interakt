@@ -1,7 +1,7 @@
 const express = require('express');
 const { 
   getPosts, createPost, deletePost, likePost, savePost, getUserPosts, 
-  getPost, searchPosts, getSavedPosts, getLikedPosts, uploadImage
+  getPost, searchPosts, getSavedPosts, getLikedPosts, uploadImage, reportPost
 } = require('../controllers/postController');
 const { protect } = require('../middleware/auth');
 
@@ -19,6 +19,9 @@ router.get('/liked', protect, getLikedPosts);
 
 router.route('/user/:userId')
   .get(getUserPosts);
+
+router.route('/:id/report')
+  .post(protect, reportPost);
 
 router.route('/:id')
   .get(getPost)

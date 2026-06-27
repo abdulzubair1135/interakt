@@ -255,6 +255,7 @@ exports.reportMessage = async (req, res) => {
 
     const report = await Report.create({
       messageId: msg._id,
+      targetType: 'message',
       text: msg.text,
       sender: msg.sender,
       recipient: msg.receiver,

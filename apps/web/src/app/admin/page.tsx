@@ -41,9 +41,11 @@ export default function AdminDashboard() {
   const [broadcastSuccess, setBroadcastSuccess] = useState(false);
   
   // Ad Form State
-  const [newAd, setNewAd] = useState({ company: '', title: '', description: '', image: '', link: '' });
+  const [newAd, setNewAd] = useState({ company: '', title: '', description: '', image: '', link: '', duration: '1_day' });
   const [adSuccess, setAdSuccess] = useState(false);
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [selectedReportContext, setSelectedReportContext] = useState<any[] | null>(null);
+  const [showContextModal, setShowContextModal] = useState(false);
   
   const [firewallMode, setFirewallMode] = useState('Standard');
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -274,7 +276,7 @@ export default function AdminDashboard() {
       await axios.post('https://interakt-api.onrender.com/api/admin/ads', newAd, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setNewAd({ company: '', title: '', description: '', image: '', link: '' });
+      setNewAd({ company: '', title: '', description: '', image: '', link: '', duration: '1_day' });
       setAdSuccess(true);
       fetchAds();
       fetchLogs();
@@ -645,38 +647,61 @@ export default function AdminDashboard() {
               </button>
             </form>
           </div>
-
-          {/* 16. Direct Message Abuse Reporting Center */}
+          {/* 16. Content & DM Abuse Reporting Center */}
           <div className="glass rounded-2xl p-6 border border-white/5">
-            <h2 className="text-lg font-bold text-white mb-4">Direct Message Abuse Reporting Center</h2>
-            <div className="space-y-3 max-h-[250px] overflow-y-auto pr-1 scrollbar-thin">
+            <h2 className="text-lg font-bold text-white mb-4">Content & DM Abuse Reporting Center</h2>
+            <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1 scrollbar-thin">
               {reports.map((rep, idx) => (
                 <div key={rep._id || idx} className="p-3 bg-white/5 border border-white/5 rounded-xl text-xs space-y-2 relative">
                   <div className="flex justify-between items-center">
-                    <span className="text-red-400 font-bold">Reason: {rep.reason}</span>
+                    <span className="text-red-400 font-bold">
+                      {rep.targetType === 'post' ? 'Post Report' : 'Message Report'}: {rep.reason}
+                    </span>
                     <button onClick={() => handleDeleteReport(rep._id)} className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white" title="Dismiss Report">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
                   <p className="bg-black/20 p-2 rounded text-gray-300 font-mono text-[11px]">"{rep.text}"</p>
                   <div className="flex justify-between text-[10px] text-gray-500">
-                    <span>Sender: @{rep.senderUser?.username}</span>
-                    <span>Reporter: @{rep.reporterUser?.username}</span>
+                    <span>Creator: @{rep.senderUser?.username || 'Unknown'}</span>
+                    <span>Reporter: @{rep.reporterUser?.username || 'Unknown'}</span>
                   </div>
-                  <div className="mt-2 pt-2 border-t border-white/5 flex gap-2">
-                     <Link href="/chat" className="text-purple-400 hover:text-purple-300 text-[10px] flex items-center gap-1 font-bold">
-                       <MessageSquare className="w-3 h-3" /> Go to Chat (God Mode)
-                     </Link>
+                  <div className="mt-2 pt-2 border-t border-white/5 flex gap-2 items-center">
+                    {rep.targetType === 'post' ? (
+                      <span className="text-xs text-gray-400">
+                        {rep.targetPost ? (
+                          <span className="text-green-400 font-bold flex items-center gap-1">
+                            Active Post: <Link href={`/explore?post=${rep.postId}`} className="text-purple-400 underline">View Feed</Link>
+                          </span>
+                        ) : (
+                          <span className="text-red-400 italic">Post already deleted</span>
+                        )}
+                      </span>
+                    ) : (
+                      <>
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            setSelectedReportContext(rep.context || []);
+                            setShowContextModal(true);
+                          }}
+                          className="text-purple-400 hover:text-purple-300 text-[10px] flex items-center gap-1 font-bold bg-purple-500/10 px-2 py-1 rounded"
+                        >
+                          <MessageSquare className="w-3 h-3" /> View Chat Context
+                        </button>
+                        <Link href="/chat" className="text-gray-400 hover:text-white text-[10px] flex items-center gap-1 font-bold px-2 py-1">
+                          Go to Chat (God Mode)
+                        </Link>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
               {reports.length === 0 && (
-                <div className="p-6 text-center text-gray-500 italic text-sm">No chat abuse reports submitted.</div>
+                <div className="p-6 text-center text-gray-500 italic text-sm">No abuse reports submitted.</div>
               )}
             </div>
-          </div>
-
-          {/* 17. Ad Campaign Generator */}
+          </div>          {/* 17. Ad Campaign Generator */}
           <div className="glass rounded-2xl p-6 border border-white/5">
             <h2 className="text-lg font-bold text-white mb-4 flex items-center space-x-2">
               <Plus className="w-5 h-5 text-green-400" />
@@ -714,39 +739,66 @@ export default function AdminDashboard() {
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none"
                 required
               />
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-2 relative group hover:border-purple-400 transition-colors">
-                  {newAd.image && newAd.image.startsWith('data:image') ? (
-                    <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0 border border-white/20">
-                      <img src={newAd.image} alt="Ad preview" className="w-full h-full object-cover" />
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                {/* Image Upload & URL Selection */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-2 relative group hover:border-purple-400 transition-colors">
+                    {newAd.image && (newAd.image.startsWith('data:image') || newAd.image.startsWith('http')) ? (
+                      <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0 border border-white/20">
+                        <img src={newAd.image} alt="Ad preview" className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded flex-shrink-0 border border-dashed border-white/20 flex items-center justify-center bg-black/20">
+                        <ImageIcon className="w-5 h-5 text-gray-400 group-hover:text-purple-400" />
+                      </div>
+                    )}
+                    <div className="relative flex-1 h-full flex flex-col justify-center">
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={handleAdImageUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <span className="text-xs font-bold text-white group-hover:text-purple-300 transition-colors">
+                        {newAd.image && newAd.image.startsWith('data:image') ? 'Change Local Image' : 'Upload Local Image'}
+                      </span>
+                      <span className="text-[9px] text-gray-400">Supported: JPG, PNG (Max 2MB)</span>
                     </div>
-                  ) : (
-                    <div className="w-10 h-10 rounded flex-shrink-0 border border-dashed border-white/20 flex items-center justify-center bg-black/20">
-                      <ImageIcon className="w-5 h-5 text-gray-400 group-hover:text-purple-400" />
-                    </div>
-                  )}
-                  <div className="relative flex-1 h-full flex flex-col justify-center">
-                    <input 
-                      type="file" 
-                      accept="image/*"
-                      onChange={handleAdImageUpload}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    />
-                    <span className="text-xs font-bold text-white group-hover:text-purple-300 transition-colors">
-                      {newAd.image ? 'Change Local Image' : 'Upload Local Image'}
-                    </span>
-                    <span className="text-[9px] text-gray-400">Supported: JPG, PNG (Max 2MB)</span>
                   </div>
+                  <input 
+                    type="text" 
+                    value={newAd.image.startsWith('data:image') ? '' : newAd.image}
+                    onChange={e => setNewAd({...newAd, image: e.target.value})}
+                    placeholder="Or Paste Image URL (https://...)" 
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none"
+                  />
                 </div>
-                <input 
-                  type="text" 
-                  value={newAd.link}
-                  onChange={e => setNewAd({...newAd, link: e.target.value})}
-                  placeholder="Redirect Destination Link" 
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none"
-                  required
-                />
+
+                {/* Link & Duration selection */}
+                <div className="space-y-2 flex flex-col justify-between">
+                  <input 
+                     type="text" 
+                     value={newAd.link}
+                     onChange={e => setNewAd({...newAd, link: e.target.value})}
+                     placeholder="Redirect Destination Link" 
+                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none"
+                     required
+                  />
+                  <select
+                     value={newAd.duration}
+                     onChange={e => setNewAd({...newAd, duration: e.target.value})}
+                     className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-gray-300 focus:outline-none"
+                  >
+                     <option value="1_day" className="bg-neutral-900 text-white">1 Day Expiration</option>
+                     <option value="3_days" className="bg-neutral-900 text-white">3 Days Expiration</option>
+                     <option value="15_days" className="bg-neutral-900 text-white">15 Days Expiration</option>
+                     <option value="1_month" className="bg-neutral-900 text-white">1 Month Expiration</option>
+                     <option value="1_year" className="bg-neutral-900 text-white">1 Year Expiration</option>
+                     <option value="permanent" className="bg-neutral-900 text-white">Permanent (No Expiration)</option>
+                  </select>
+                </div>
               </div>
+
               <button type="submit" className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl text-xs font-bold text-white hover:opacity-90 active:scale-95 transition-all">
                 🚀 Deploy Advertisement Banner
               </button>
@@ -1125,6 +1177,50 @@ export default function AdminDashboard() {
                     <p className="text-purple-300 font-mono mt-1">OTP: {r.otp}</p>
                   </div>
                 ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+        {showContextModal && selectedReportContext && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowContextModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="glass rounded-3xl p-6 border border-white/10 w-full max-w-xl max-h-[85vh] overflow-hidden flex flex-col relative"
+            >
+              <button 
+                onClick={() => setShowContextModal(false)}
+                className="absolute top-4 right-4 p-2 bg-white/5 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              
+              <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-purple-400" />
+                <span>Chat Context History (Last 30 Messages)</span>
+              </h2>
+              
+              <div className="overflow-y-auto pr-2 space-y-3 flex-1 scrollbar-thin bg-black/20 p-3 rounded-xl max-h-[50vh]">
+                {selectedReportContext.map((msg, i) => (
+                  <div key={msg._id || i} className="p-2 border-b border-white/5 last:border-0">
+                    <div className="flex justify-between items-center text-[10px] text-gray-500 mb-1">
+                      <span className="font-bold text-purple-300">@{msg.sender?.username || 'Unknown'}</span>
+                      <span>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <p className="text-gray-200 text-xs">{msg.text}</p>
+                  </div>
+                ))}
+                {selectedReportContext.length === 0 && (
+                  <p className="text-center text-gray-500 italic text-sm py-4">No chat context found.</p>
+                )}
               </div>
             </motion.div>
           </motion.div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Trash2, Flag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -122,6 +122,23 @@ const PostCard = ({ id, author, avatar, time, content, image, likes: initialLike
     }
   };
 
+  const handleReport = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const reason = prompt('Why are you reporting this post? (e.g. Inappropriate content, Spam, Harassment)');
+    if (reason === null) return;
+    try {
+      const token = localStorage.getItem('campushub_token');
+      await axios.post(`https://interakt-api.onrender.com/api/posts/${id}/report`, { reason }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('Post has been reported to administrators.');
+    } catch (error) {
+      console.error('Failed to report post:', error);
+      alert('Failed to report post');
+    }
+  };
+
   const displayTag = tags?.[0] || category;
   const tagColor = displayTag ? (tagColors[displayTag] || '#9ca3af') : null;
 
@@ -185,6 +202,15 @@ const PostCard = ({ id, author, avatar, time, content, image, likes: initialLike
               title="Delete Post"
             >
               <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+          {(user && user._id !== userId) && (
+            <button
+              onClick={handleReport}
+              className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              title="Report Post"
+            >
+              <Flag className="w-4 h-4" />
             </button>
           )}
         </div>

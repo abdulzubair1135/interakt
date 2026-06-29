@@ -416,13 +416,6 @@ export default function Profile() {
                       );
                     })}
                   </div>
-                  <input 
-                    type="text" 
-                    value={editForm.avatar}
-                    onChange={(e) => setEditForm({...editForm, avatar: e.target.value})}
-                    placeholder="Or enter custom Avatar URL..."
-                    className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-xs text-white outline-none focus:border-purple-500/50"
-                  />
                 </div>
 
                 <div>
@@ -447,13 +440,6 @@ export default function Profile() {
                       );
                     })}
                   </div>
-                  <input 
-                    type="text" 
-                    value={editForm.coverImage}
-                    onChange={(e) => setEditForm({...editForm, coverImage: e.target.value})}
-                    placeholder="Or enter custom Cover Image URL..."
-                    className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-xs text-white outline-none focus:border-purple-500/50"
-                  />
                 </div>
 
                 <button 

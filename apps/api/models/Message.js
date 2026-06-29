@@ -29,6 +29,10 @@ const messageSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  viewedBy: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'User'
+  }],
   expireAt: {
     type: Date,
     default: () => new Date(Date.now() + 27 * 60 * 60 * 1000) // 27 hours from now

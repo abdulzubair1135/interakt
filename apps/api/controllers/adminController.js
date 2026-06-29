@@ -272,3 +272,46 @@ exports.getAdStats = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+// @desc    Send a warning to a user
+// @route   POST /api/admin/users/:id/warn
+// @access  Private/Admin
+exports.sendWarning = async (req, res) => {
+  try {
+    const { reason } = req.body;
+    if (!reason) {
+      return res.status(400).json({ success: false, error: 'Reason is required' });
+    }
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    // Add warning
+    if (!user.warnings) user.warnings = [];
+    user.warnings.push({
+      reason,
+      warnedBy: req.user.id,
+      createdAt: new Date()
+    });
+    
+    await user.save();
+    
+    const { logActivity } = require('../utils/activityLogger');
+    await logActivity(req.user.id, req.user.username, 'warn_user', `Warned user ${user.username} for: "${reason}"`, req.ip);
+
+    // Emit live warning alert via WebSocket if user is online
+    if (global.onlineUsers && global.io) {
+      const userSocketsSet = global.onlineUsers.get(user._id.toString());
+      if (userSocketsSet) {
+        userSocketsSet.forEach(socketId => {
+          global.io.to(socketId).emit('admin_warning', { reason });
+        });
+      }
+    }
+
+    res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};

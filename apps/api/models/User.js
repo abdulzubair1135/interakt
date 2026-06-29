@@ -17,9 +17,17 @@ const UserSchema = new mongoose.Schema({
   phone: { type: String, default: '' },
   isPrivate: { type: Boolean, default: false },
   isBanned: { type: Boolean, default: false },
+  bannedUntil: { type: String, default: null },
   lastLogin: { type: Date, default: Date.now },
   followers: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
-  following: [{ type: mongoose.Schema.ObjectId, ref: 'User' }]
+  following: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
+  warnings: [{
+    reason: { type: String, required: true },
+    warnedBy: { type: mongoose.Schema.ObjectId, ref: 'User' },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  blockedUsers: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
+  suspensionEnd: { type: Date, default: null }
 }, { 
   timestamps: true,
   toJSON: { virtuals: true },

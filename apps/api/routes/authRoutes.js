@@ -4,7 +4,8 @@ const {
   searchUsers, toggleFollow, updateDetails, getTrendingUsers, 
   getFollowingUsers, setPremium, togglePrivate, getNotifications, 
   markNotificationsRead, getFollowers, getFollowing,
-  forgotPassword, verifyResetOtp, getActiveAds, trackAdClick, logInspectAttempt
+  forgotPassword, verifyResetOtp, getActiveAds, trackAdClick, logInspectAttempt,
+  blockUser, unblockUser, getBlockedUsers
 } = require('../controllers/authController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -39,6 +40,10 @@ router.put('/:id/premium', protect, authorize('admin'), setPremium);
 router.put('/toggleprivate', protect, togglePrivate);
 router.get('/notifications', protect, getNotifications);
 router.put('/notifications/read', protect, markNotificationsRead);
+
+router.post('/:id/block', protect, blockUser);
+router.post('/:id/unblock', protect, unblockUser);
+router.get('/blocked', protect, getBlockedUsers);
 
 router.get('/ads', getActiveAds);
 router.post('/ads/:id/click', protect, trackAdClick);

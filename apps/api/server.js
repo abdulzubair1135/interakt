@@ -13,6 +13,8 @@ const fs = require('fs');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
+const Message = require('./models/Message');
+const Group = require('./models/Group');
 
 // Route imports
 const authRoutes = require('./routes/authRoutes');
@@ -40,6 +42,7 @@ const io = new Server(server, {
     credentials: true,
   },
 });
+global.io = io;
 
 // ── Request ID ──────────────────────────────────────────────────────────────
 app.use((req, res, next) => {
@@ -178,11 +181,15 @@ app.get('/api/download/apk', (req, res) => {
 });
 
 // ── Socket.IO Auth Middleware ───────────────────────────────────────────────
+const onlineUsers = new Map(); // userId -> Set of socket.ids
+global.onlineUsers = onlineUsers;
+
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
   if (!token) return next(new Error('Authentication required'));
   try {
-    jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    socket.userId = decoded.id;
     next();
   } catch (e) {
     next(new Error('Invalid token'));
@@ -196,6 +203,14 @@ function stripHtml(str) {
 
 // ── Socket.io for Real-time features ────────────────────────────────────────
 io.on('connection', (socket) => {
+  if (socket.userId) {
+    if (!onlineUsers.has(socket.userId)) {
+      onlineUsers.set(socket.userId, new Set());
+    }
+    onlineUsers.get(socket.userId).add(socket.id);
+    io.emit('user_status', { userId: socket.userId, status: 'online' });
+  }
+
   socket.on('join_room', (room) => {
     socket.join(room);
   });
@@ -205,14 +220,12 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send_message', (data) => {
-    // ── Message Validation ──────────────────────────────────────────────
     if (!data || typeof data.text !== 'string') {
       return socket.emit('error', { message: 'Invalid message: text is required and must be a string.' });
     }
     if (data.text.length > 2000) {
       return socket.emit('error', { message: 'Message too long. Maximum 2000 characters.' });
     }
-    // Sanitize – strip HTML tags
     data.text = stripHtml(data.text);
 
     const targetRoom = data.room || data.chatId;
@@ -223,12 +236,65 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Typing Events
+  socket.on('typing', (data) => {
+    const targetRoom = data.chatId;
+    if (targetRoom) {
+      socket.to(targetRoom).emit('user_typing', data);
+    }
+  });
+
+  socket.on('stop_typing', (data) => {
+    const targetRoom = data.chatId;
+    if (targetRoom) {
+      socket.to(targetRoom).emit('user_stop_typing', data);
+    }
+  });
+
+  socket.on('read_message', async (data) => {
+    const { chatId, userId } = data;
+    if (!chatId || !userId) return;
+    try {
+      await Message.updateMany(
+        { 
+          $or: [
+            { receiver: userId, sender: chatId },
+            { group: chatId, sender: { $ne: userId } }
+          ],
+          viewedBy: { $ne: userId }
+        },
+        { $push: { viewedBy: userId } }
+      );
+      io.to(chatId === 'global' ? 'global_room' : chatId).emit('message_read', { chatId, userId });
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
+  // Check online statuses
+  socket.on('check_online_status', (userIds) => {
+    if (Array.isArray(userIds)) {
+      const statuses = userIds.map(id => ({
+        userId: id,
+        status: onlineUsers.has(id) ? 'online' : 'offline'
+      }));
+      socket.emit('online_statuses', statuses);
+    }
+  });
+
   socket.on('new_post', (data) => {
     io.emit('post_update', data);
   });
 
   socket.on('disconnect', () => {
-    // connection closed
+    if (socket.userId && onlineUsers.has(socket.userId)) {
+      const userSockets = onlineUsers.get(socket.userId);
+      userSockets.delete(socket.id);
+      if (userSockets.size === 0) {
+        onlineUsers.delete(socket.userId);
+        io.emit('user_status', { userId: socket.userId, status: 'offline' });
+      }
+    }
   });
 });
 

@@ -2,7 +2,7 @@ const express = require('express');
 const { protect, authorize } = require('../middleware/auth');
 const { 
   getAllUsers, deleteUser, deletePost, getActivityLogs, getOtpRequests,
-  banUser, getReports, deleteReport, createAd, deleteAd, getAdStats
+  banUser, getReports, deleteReport, createAd, deleteAd, getAdStats, sendWarning
 } = require('../controllers/adminController');
 
 const router = express.Router();
@@ -14,6 +14,7 @@ router.use(authorize('admin'));
 router.get('/users', getAllUsers);
 router.delete('/users/:id', deleteUser);
 router.post('/users/:id/ban', banUser);
+router.post('/users/:id/warn', sendWarning);
 router.delete('/posts/:id', deletePost);
 router.get('/logs', getActivityLogs);
 router.get('/otp-requests', getOtpRequests);

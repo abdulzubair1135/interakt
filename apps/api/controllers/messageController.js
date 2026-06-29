@@ -5,6 +5,19 @@ const Report = require('../models/Report');
 const { logActivity } = require('../utils/activityLogger');
 const { filterProfanity } = require('../utils/profanityFilter');
 
+const userLastMessageTimes = new Map();
+
+const checkBlockStatus = async (userId, targetId) => {
+  const Block = require('../models/Block');
+  const isBlocked = await Block.findOne({
+    $or: [
+      { blocker: userId, blocked: targetId },
+      { blocker: targetId, blocked: userId }
+    ]
+  });
+  return !!isBlocked;
+};
+
 const populateSender = async (msgs) => {
   const users = await User.find().lean();
   return msgs.map(m => {
@@ -35,6 +48,14 @@ exports.getGlobalMessages = async (req, res) => {
 
 exports.sendGlobalMessage = async (req, res) => {
   try {
+    const userId = req.user.id;
+    const lastMsg = userLastMessageTimes.get(userId);
+    const now = Date.now();
+    if (lastMsg && (now - lastMsg < 1000)) {
+      return res.status(429).json({ success: false, error: 'Spam Prevention: You are messaging too fast.' });
+    }
+    userLastMessageTimes.set(userId, now);
+
     const filteredText = filterProfanity(req.body.text);
     const msg = await Message.create({
       text: filteredText,
@@ -54,6 +75,10 @@ exports.getPersonalMessages = async (req, res) => {
   try {
     const userId = req.user.id;
     const recipientId = req.params.recipientId;
+
+    if (await checkBlockStatus(userId, recipientId)) {
+      return res.status(403).json({ success: false, error: 'Communication blocked' });
+    }
     
     // Mark recipient's messages to me as viewed by me
     await Message.updateMany(
@@ -79,6 +104,20 @@ exports.getPersonalMessages = async (req, res) => {
 
 exports.sendPersonalMessage = async (req, res) => {
   try {
+    const userId = req.user.id;
+    const recipientId = req.params.recipientId;
+
+    if (await checkBlockStatus(userId, recipientId)) {
+      return res.status(403).json({ success: false, error: 'Communication blocked' });
+    }
+
+    const lastMsg = userLastMessageTimes.get(userId);
+    const now = Date.now();
+    if (lastMsg && (now - lastMsg < 1000)) {
+      return res.status(429).json({ success: false, error: 'Spam Prevention: You are messaging too fast.' });
+    }
+    userLastMessageTimes.set(userId, now);
+
     const filteredText = filterProfanity(req.body.text);
     const msg = await Message.create({
       text: filteredText,
@@ -98,11 +137,43 @@ exports.sendPersonalMessage = async (req, res) => {
 exports.createGroupChat = async (req, res) => {
   try {
     const { name, description, members } = req.body;
+    const inviterId = req.user.id;
+    const inviter = await User.findById(inviterId);
+
+    const validMembers = [inviterId];
+
+    for (const memberId of (members || [])) {
+      const member = await User.findById(memberId);
+      if (!member) continue;
+
+      // 1. Mutual block check
+      if (await checkBlockStatus(inviterId, memberId)) {
+        return res.status(403).json({ 
+          success: false, 
+          error: `Cannot invite @${member.username} due to active block settings.` 
+        });
+      }
+
+      // 2. Private account checks: must be mutual followers
+      if (member.isPrivate) {
+        const isFollowingInviter = (member.followers || []).map(id => id.toString()).includes(inviterId);
+        const isInviterFollowing = (inviter.following || []).map(id => id.toString()).includes(memberId);
+        if (!isFollowingInviter || !isInviterFollowing) {
+          return res.status(403).json({ 
+            success: false, 
+            error: `Cannot invite @${member.username} (Private Account). You must be mutual followers.` 
+          });
+        }
+      }
+
+      validMembers.push(memberId);
+    }
+
     const group = await Group.create({
       name,
       description,
-      admin: req.user.id,
-      members: [req.user.id, ...(members || [])]
+      admin: inviterId,
+      members: validMembers
     });
     res.status(201).json({ success: true, data: group });
   } catch (err) {
@@ -131,6 +202,14 @@ exports.getGroupMessages = async (req, res) => {
 
 exports.sendGroupMessage = async (req, res) => {
   try {
+    const userId = req.user.id;
+    const lastMsg = userLastMessageTimes.get(userId);
+    const now = Date.now();
+    if (lastMsg && (now - lastMsg < 1000)) {
+      return res.status(429).json({ success: false, error: 'Spam Prevention: You are messaging too fast.' });
+    }
+    userLastMessageTimes.set(userId, now);
+
     const filteredText = filterProfanity(req.body.text);
     const msg = await Message.create({
       text: filteredText,
@@ -283,6 +362,39 @@ exports.joinGroup = async (req, res) => {
     }
     group.members.push(req.user.id);
     await group.save();
+    res.status(200).json({ success: true, data: group });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+};
+
+exports.leaveGroup = async (req, res) => {
+  try {
+    const group = await Group.findById(req.params.groupId);
+    if (!group) {
+      return res.status(404).json({ success: false, error: 'Group not found' });
+    }
+    const members = group.members || [];
+    if (!members.map(id => id.toString()).includes(req.user.id)) {
+      return res.status(400).json({ success: false, error: 'You are not a member of this group' });
+    }
+    group.members = group.members.filter(id => id.toString() !== req.user.id);
+    await group.save();
+    res.status(200).json({ success: true, message: 'Successfully left group' });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+};
+
+exports.getGroupDetails = async (req, res) => {
+  try {
+    const group = await Group.findById(req.params.groupId)
+      .populate('members', 'username name avatar isPremium')
+      .populate('admin', 'username name avatar isPremium')
+      .lean();
+    if (!group) {
+      return res.status(404).json({ success: false, error: 'Group not found' });
+    }
     res.status(200).json({ success: true, data: group });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });

@@ -19,10 +19,27 @@ export default function Settings() {
   const [passError, setPassError] = useState('');
   const [passSuccess, setPassSuccess] = useState('');
 
+  const [personalNotifs, setPersonalNotifs] = useState(true);
+  const [groupNotifs, setGroupNotifs] = useState(true);
+
+  const handleTogglePersonalNotifs = () => {
+    const newVal = !personalNotifs;
+    setPersonalNotifs(newVal);
+    localStorage.setItem('interakt_personal_notifs', String(newVal));
+  };
+
+  const handleToggleGroupNotifs = () => {
+    const newVal = !groupNotifs;
+    setGroupNotifs(newVal);
+    localStorage.setItem('interakt_group_notifs', String(newVal));
+  };
+
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     setIsDarkMode(savedTheme === 'dark');
     document.documentElement.setAttribute('data-theme', savedTheme);
+    setPersonalNotifs(localStorage.getItem('interakt_personal_notifs') !== 'false');
+    setGroupNotifs(localStorage.getItem('interakt_group_notifs') !== 'false');
     fetchUserData();
   }, []);
 
@@ -331,15 +348,48 @@ export default function Settings() {
         {activeModal === 'notifications' && (
           <Modal title="Notification Preferences" onClose={() => setActiveModal(null)}>
             <div className="space-y-4">
-              {['Push Notifications', 'Email Notifications', 'Direct Message Alerts', 'Post Interactions'].map(item => (
-                <div key={item} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
-                  <span className="text-sm text-white">{item}</span>
-                  <div className="w-10 h-5 rounded-full bg-purple-600 relative">
-                    <div className="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div>
-                  </div>
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
+                <div>
+                  <span className="text-sm font-bold text-white block">Personal Chat Notifications</span>
+                  <span className="text-[10px] text-gray-400">Receive alerts for direct personal messages</span>
                 </div>
-              ))}
-              <p className="text-[10px] text-gray-500 text-center mt-4">More granular controls coming soon in the next update.</p>
+                <button 
+                  onClick={handleTogglePersonalNotifs}
+                  className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${personalNotifs ? 'bg-purple-600' : 'bg-gray-600'}`}
+                >
+                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ${personalNotifs ? 'right-1' : 'left-1'}`}></div>
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
+                <div>
+                  <span className="text-sm font-bold text-white block">Group Chat Notifications</span>
+                  <span className="text-[10px] text-gray-400">Receive alerts for group chat messages</span>
+                </div>
+                <button 
+                  onClick={handleToggleGroupNotifs}
+                  className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${groupNotifs ? 'bg-purple-600' : 'bg-gray-600'}`}
+                >
+                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ${groupNotifs ? 'right-1' : 'left-1'}`}></div>
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-2 pt-2 border-t border-white/5">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (typeof window !== 'undefined' && 'Notification' in window) {
+                      const permission = await Notification.requestPermission();
+                      alert(`Browser Notification Permission: ${permission}`);
+                    } else {
+                      alert('This browser does not support web notifications.');
+                    }
+                  }}
+                  className="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold text-white transition-all active:scale-95"
+                >
+                  🔔 Request Browser Notification Permission
+                </button>
+              </div>
             </div>
           </Modal>
         )}

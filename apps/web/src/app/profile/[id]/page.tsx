@@ -19,11 +19,53 @@ export default function UserProfile() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
+  const [isBlocked, setIsBlocked] = useState(false);
   const [followModal, setFollowModal] = useState<{ isOpen: boolean; type: 'followers' | 'following'; title: string }>({
     isOpen: false,
     type: 'followers',
     title: 'Followers'
   });
+
+  useEffect(() => {
+    const checkBlocked = async () => {
+      try {
+        const token = localStorage.getItem('campushub_token');
+        if (!token) return;
+        const res = await axios.get('https://interakt-api.onrender.com/api/auth/blocked', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const blockedUsers = res.data.data || [];
+        setIsBlocked(blockedUsers.some((u: any) => u._id === id));
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    if (id) checkBlocked();
+  }, [id]);
+
+  const handleBlockToggle = async () => {
+    const confirmMsg = isBlocked 
+      ? `Are you sure you want to unblock @${profile?.username}?` 
+      : `Are you sure you want to block @${profile?.username}? This will unfollow both ways and prevent messaging.`;
+    if (!confirm(confirmMsg)) return;
+
+    try {
+      const token = localStorage.getItem('campushub_token');
+      if (!token) return router.push('/login');
+
+      const action = isBlocked ? 'unblock' : 'block';
+      await axios.post(`https://interakt-api.onrender.com/api/auth/${id}/${action}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setIsBlocked(!isBlocked);
+      if (!isBlocked) {
+        setIsFollowing(false);
+        setFollowersCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (err) {
+      console.error('Error toggling block:', err);
+    }
+  };
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -150,18 +192,35 @@ export default function UserProfile() {
             </button>
           </div>
         </div>
-        <div className="flex space-x-3">
-          <button 
-            onClick={handleFollowToggle}
-            className={`${isFollowing ? 'bg-white/10 text-white border border-white/20' : 'bg-[var(--accent-purple)] hover:bg-purple-600 text-white shadow-[0_0_15px_rgba(139,92,246,0.4)]'} font-bold py-2.5 px-6 rounded-xl transition-all active:scale-95`}
-          >
-            {isFollowing ? 'Following' : 'Follow'}
-          </button>
-          <Link href={`/messages?user=${profile._id}`}>
-            <button className="bg-white/10 hover:bg-white/20 text-white p-2.5 rounded-xl border border-white/10 transition-all active:scale-95">
-              <MessageSquare className="w-5 h-5" />
+        <div className="flex space-x-3 items-center">
+          {isBlocked ? (
+            <button 
+              onClick={handleBlockToggle}
+              className="bg-green-600/20 text-green-400 border border-green-500/30 hover:bg-green-600/35 font-bold py-2.5 px-6 rounded-xl transition-all active:scale-95 text-xs"
+            >
+              Unblock
             </button>
-          </Link>
+          ) : (
+            <>
+              <button 
+                onClick={handleFollowToggle}
+                className={`${isFollowing ? 'bg-white/10 text-white border border-white/20' : 'bg-[var(--accent-purple)] hover:bg-purple-600 text-white shadow-[0_0_15px_rgba(139,92,246,0.4)]'} font-bold py-2.5 px-6 rounded-xl transition-all active:scale-95 text-xs`}
+              >
+                {isFollowing ? 'Following' : 'Follow'}
+              </button>
+              <Link href={`/messages?user=${profile._id}`}>
+                <button className="bg-white/10 hover:bg-white/20 text-white p-2.5 rounded-xl border border-white/10 transition-all active:scale-95">
+                  <MessageSquare className="w-5 h-5" />
+                </button>
+              </Link>
+              <button 
+                onClick={handleBlockToggle}
+                className="bg-red-500/10 hover:bg-red-500/25 border border-red-500/30 text-red-400 hover:text-red-300 font-bold py-2.5 px-4 rounded-xl transition-all active:scale-95 text-[10px]"
+              >
+                Block
+              </button>
+            </>
+          )}
         </div>
       </div>
 

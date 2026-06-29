@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import { useAuth } from '../providers/AuthProvider';
+import { renderCensoredText } from '../ui/profanityHelper';
 
 interface PostProps {
   id: string;
@@ -218,7 +219,7 @@ const PostCard = ({ id, author, avatar, time, content, image, likes: initialLike
 
       <Link href={`/posts/${id}`}>
         <div className="mb-4">
-          <p className="text-gray-200 text-[15px] leading-relaxed whitespace-pre-wrap mb-4">{content}</p>
+          <p className="text-gray-200 text-[15px] leading-relaxed whitespace-pre-wrap mb-4">{renderCensoredText(content)}</p>
           {image && (
             <div className="rounded-2xl overflow-hidden border border-white/10 relative group mb-4">
               <img src={image} alt="Post content" className="w-full h-auto object-cover max-h-[400px] group-hover:scale-105 transition-transform duration-700" />

@@ -3,7 +3,7 @@ const {
   getGlobalMessages, sendGlobalMessage, 
   getPersonalMessages, sendPersonalMessage, createGroupChat,
   getConversations, getGroupMessages, sendGroupMessage,
-  deleteMessage, reportMessage, joinGroup
+  deleteMessage, reportMessage, joinGroup, getGroupDetails, leaveGroup
 } = require('../controllers/messageController');
 const { protect } = require('../middleware/auth');
 
@@ -20,6 +20,9 @@ router.route('/personal/:recipientId')
   .post(protect, sendPersonalMessage);
 
 router.post('/group', protect, createGroupChat);
+
+router.get('/group/:groupId/details', protect, getGroupDetails);
+router.post('/group/:groupId/leave', protect, leaveGroup);
 
 router.route('/group/:groupId')
   .get(protect, getGroupMessages)

@@ -1,26 +1,42 @@
 const badWordsMap = {
   'chutiya': 'cute',
-  'madarchod': 'beauty',
-  'madar chod': 'beauty',
-  'bhenchod': 'brother',
-  'bhen chod': 'brother',
-  'gandu': 'genius',
-  'bhosdike': 'handsome',
-  'bhosdi ke': 'handsome',
+  'chutiyap': 'cuteness',
+  'madarchod': 'respect',
+  'madar chod': 'respect',
+  'bhenchod': 'buddy',
+  'bhen chod': 'buddy',
+  'gandu': 'good',
+  'bhosdike': 'sweetheart',
+  'bhosdi ke': 'sweetheart',
   'lodu': 'lovely',
+  'loda': 'lovely',
   'chut': 'flower',
   'lund': 'stick',
-  'fuck': 'hug',
-  'bitch': 'queen',
-  'asshole': 'angel'
+  'saala': 'friend',
+  'saale': 'friend',
+  'kamina': 'nice',
+  'kamine': 'nice',
+  'harami': 'lovely',
+  'randi': 'queen',
+  'fuck': 'love',
+  'fucking': 'loving',
+  'bitch': 'star',
+  'asshole': 'angel',
+  'bastard': 'buddy',
+  'dick': 'stick',
+  'pussy': 'flower',
+  'shit': 'oops',
+  'cunt': 'buddy'
 };
 
 exports.filterProfanity = (text) => {
   if (!text) return text;
   let filtered = text;
   for (const [bad, good] of Object.entries(badWordsMap)) {
-    const regex = new RegExp(`\\b${bad}\\b`, 'gi');
-    filtered = filtered.replace(regex, good);
+    // Escape regex special chars if any
+    const escapedBad = bad.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(`\\b${escapedBad}\\b`, 'gi');
+    filtered = filtered.replace(regex, `[censor:${good}]`);
   }
   return filtered;
 };

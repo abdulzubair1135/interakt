@@ -364,6 +364,18 @@ exports.getUserProfile = async (req, res) => {
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
     const currentUserId = req.user ? req.user.id : null;
+
+    if (currentUserId) {
+      const isBlocked = await Block.findOne({
+        $or: [
+          { blocker: currentUserId, blocked: req.params.id },
+          { blocker: req.params.id, blocked: currentUserId }
+        ]
+      });
+      if (isBlocked) {
+        return res.status(403).json({ success: false, error: 'Access denied. Communication blocked.' });
+      }
+    }
     const isFollowing = (user.followers || []).includes(currentUserId);
     const isOwner = currentUserId === user._id;
 
@@ -957,5 +969,70 @@ exports.verifyResetOtp = async (req, res) => {
   } catch (error) {
     console.error('Verify OTP Reset Error:', error);
     res.status(500).json({ success: false, error: safeErrorMessage(error) });
+  }
+};
+
+const Block = require('../models/Block');
+
+exports.blockUser = async (req, res) => {
+  try {
+    const blockerId = req.user.id;
+    const blockedId = req.params.id;
+
+    if (blockerId === blockedId) {
+      return res.status(400).json({ success: false, error: 'You cannot block yourself' });
+    }
+
+    const targetUser = await User.findById(blockedId);
+    if (!targetUser) {
+      return res.status(404).json({ success: false, error: 'User to block not found' });
+    }
+
+    // Create block record
+    const alreadyBlocked = await Block.findOne({ blocker: blockerId, blocked: blockedId });
+    if (alreadyBlocked) {
+      return res.status(200).json({ success: true, message: 'User already blocked' });
+    }
+
+    await Block.create({ blocker: blockerId, blocked: blockedId });
+
+    // Auto-unfollow both ways when blocking
+    await User.findByIdAndUpdate(blockerId, { $pull: { following: blockedId, followers: blockedId } });
+    await User.findByIdAndUpdate(blockedId, { $pull: { following: blockerId, followers: blockerId } });
+
+    await logActivity(blockerId, req.user.username, 'block_user', `Blocked user: @${targetUser.username}`, req.ip);
+
+    res.status(200).json({ success: true, message: `Successfully blocked @${targetUser.username}` });
+  } catch (err) {
+    res.status(400).json({ success: false, error: safeErrorMessage(err) });
+  }
+};
+
+exports.unblockUser = async (req, res) => {
+  try {
+    const blockerId = req.user.id;
+    const blockedId = req.params.id;
+
+    const block = await Block.findOneAndDelete({ blocker: blockerId, blocked: blockedId });
+    if (!block) {
+      return res.status(400).json({ success: false, error: 'User is not blocked' });
+    }
+
+    await logActivity(blockerId, req.user.username, 'unblock_user', `Unblocked user: ${blockedId}`, req.ip);
+
+    res.status(200).json({ success: true, message: 'User successfully unblocked' });
+  } catch (err) {
+    res.status(400).json({ success: false, error: safeErrorMessage(err) });
+  }
+};
+
+exports.getBlockedUsers = async (req, res) => {
+  try {
+    const blockerId = req.user.id;
+    const blocks = await Block.find({ blocker: blockerId }).populate('blocked', 'username name avatar').lean();
+    const blockedUsers = blocks.map(b => b.blocked).filter(Boolean);
+    res.status(200).json({ success: true, data: blockedUsers });
+  } catch (err) {
+    res.status(400).json({ success: false, error: safeErrorMessage(err) });
   }
 };

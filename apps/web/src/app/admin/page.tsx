@@ -201,6 +201,21 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleWarnUser = async (userId: string, reason: string) => {
+    if (!reason.trim()) return;
+    try {
+      const token = localStorage.getItem('campushub_token');
+      await axios.post(`https://interakt-api.onrender.com/api/admin/users/${userId}/warn`, { reason }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('Warning successfully issued to the user.');
+      fetchUsers();
+      fetchLogs();
+    } catch (e) {
+      alert('Failed to send warning');
+    }
+  };
+
   const handleSetPremium = async (userId: string, duration: string) => {
     try {
       const token = localStorage.getItem('campushub_token');
@@ -490,32 +505,62 @@ export default function AdminDashboard() {
             </h2>
             <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1 scrollbar-thin">
               {users.map((u, idx) => (
-                <div key={u._id || idx} className="p-3 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between text-xs">
-                  <div>
-                    <p className="font-bold text-white">{u.username}</p>
+                <div key={u._id || idx} className="p-3 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between text-xs gap-4">
+                  <div className="flex-1">
+                    <p className="font-bold text-white">@{u.username}</p>
                     <p className="text-[10px] text-gray-400">{u.email}</p>
+                    
                     {u.bannedUntil && (
-                      <span className="bg-red-500/20 text-red-400 px-1 py-0.5 rounded text-[9px] font-bold block mt-1">
+                      <span className="bg-red-500/25 text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold inline-block mt-1 uppercase tracking-wider">
                         Banned: {u.bannedUntil === 'permanent' ? 'Permanent' : new Date(u.bannedUntil).toLocaleDateString()}
+                      </span>
+                    )}
+
+                    {u.warnings && u.warnings.length > 0 && (
+                      <span className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/20 px-1.5 py-0.5 rounded text-[8px] font-semibold block mt-1">
+                        ⚠️ Warnings: {u.warnings.length} (Latest: "{u.warnings[u.warnings.length - 1].reason}")
                       </span>
                     )}
                   </div>
                   {u.role !== 'admin' && (
-                    <div className="flex gap-1.5">
-                      <select 
-                        onChange={(e) => handleBanUser(u._id, e.target.value)}
-                        value={u.bannedUntil ? (u.bannedUntil === 'permanent' ? 'permanent' : '3_days') : 'none'}
-                        className="bg-slate-800 border border-slate-700 rounded p-1 text-[10px] text-white"
+                    <div className="flex flex-col gap-2 items-end">
+                      <div className="flex gap-1.5">
+                        <select 
+                          onChange={(e) => handleBanUser(u._id, e.target.value)}
+                          value={u.bannedUntil ? (u.bannedUntil === 'permanent' ? 'permanent' : '3_days') : 'none'}
+                          className="bg-slate-800 border border-slate-700 rounded p-1 text-[10px] text-white"
+                        >
+                          <option value="none">Active</option>
+                          <option value="3_days">Ban 3 Days</option>
+                          <option value="10_days">Ban 10 Days</option>
+                          <option value="1_month">Ban 1 Month</option>
+                          <option value="permanent">Permanent</option>
+                        </select>
+                        <button onClick={() => handleDeleteUser(u._id)} className="p-1 bg-red-500/20 text-red-400 hover:text-red-300 rounded">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      <form 
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          const input = (e.currentTarget.elements.namedItem('warningText') as HTMLInputElement);
+                          handleWarnUser(u._id, input.value);
+                          input.value = '';
+                        }}
+                        className="flex gap-1 items-center"
                       >
-                        <option value="none">Active</option>
-                        <option value="3_days">Ban 3 Days</option>
-                        <option value="10_days">Ban 10 Days</option>
-                        <option value="1_month">Ban 1 Month</option>
-                        <option value="permanent">Permanent</option>
-                      </select>
-                      <button onClick={() => handleDeleteUser(u._id)} className="p-1 bg-red-500/20 text-red-400 hover:text-red-300 rounded">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                        <input 
+                          type="text" 
+                          name="warningText" 
+                          placeholder="Warn reason..." 
+                          className="bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-[9px] text-white outline-none w-24 focus:border-yellow-500/50" 
+                          required
+                        />
+                        <button type="submit" className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/35 rounded px-1.5 py-0.5 text-[9px] font-bold">
+                          Warn
+                        </button>
+                      </form>
                     </div>
                   )}
                 </div>

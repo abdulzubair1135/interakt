@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Send, Image as ImageIcon, MoreVertical, Phone, Video, Loader2, Users, Plus, X, Search as SearchIcon, MessageSquare, ArrowLeft, Trash2, Flag, Crown, Eye, ShieldAlert } from 'lucide-react';
+import { Search, Send, Image as ImageIcon, MoreVertical, Phone, Video, Loader2, Users, Plus, X, Search as SearchIcon, MessageSquare, ArrowLeft, Trash2, Flag, Crown, Eye, ShieldAlert, Bell, BellOff } from 'lucide-react';
 import { useState, useEffect, useRef, Suspense } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
@@ -37,6 +37,8 @@ function MessagesContent() {
   const [showGroupDetailsModal, setShowGroupDetailsModal] = useState(false);
   const [activeGroupDetails, setActiveGroupDetails] = useState<any>(null);
   const [adminWarningMsg, setAdminWarningMsg] = useState<string | null>(null);
+  const [inAppNotification, setInAppNotification] = useState<{ senderName: string, avatar: string, text: string, chatId: string } | null>(null);
+  const [muteUpdateTrigger, setMuteUpdateTrigger] = useState(false);
   const isTypingRef = useRef(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -160,23 +162,37 @@ function MessagesContent() {
         const isGlobal = message.chatId === 'global_room' || message.isGlobal;
         const isGroup = message.group || message.chatId.startsWith('group_') || (chats.find(c => c.id === message.chatId)?.isGroup);
 
-        let shouldAlert = true;
+        const isChatMuted = localStorage.getItem(`mute_chat_${message.chatId}`) === 'true';
+
+        let shouldAlert = !isChatMuted;
         if (isGlobal) {
           shouldAlert = false; // Never notify for global room chat spam
         } else if (isGroup) {
-          shouldAlert = localStorage.getItem('interakt_group_notifs') !== 'false';
+          shouldAlert = shouldAlert && localStorage.getItem('interakt_group_notifs') !== 'false';
         } else {
-          shouldAlert = localStorage.getItem('interakt_personal_notifs') !== 'false';
+          shouldAlert = shouldAlert && localStorage.getItem('interakt_personal_notifs') !== 'false';
         }
 
         if (shouldAlert) {
           playNotificationSound();
           
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification(`Message from @${message.sender?.username || 'User'}`, {
-              body: message.text,
-              icon: '/logo.jpg'
+          if (!document.hidden) {
+            setInAppNotification({
+              senderName: message.sender?.username || 'User',
+              avatar: message.sender?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${message.sender?._id}`,
+              text: message.text,
+              chatId: message.chatId
             });
+            setTimeout(() => {
+              setInAppNotification(prev => prev?.chatId === message.chatId ? null : prev);
+            }, 4000);
+          } else {
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification(`Message from @${message.sender?.username || 'User'}`, {
+                body: message.text,
+                icon: '/logo.jpg'
+              });
+            }
           }
         }
       }
@@ -489,7 +505,40 @@ function MessagesContent() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-12rem)] md:h-[calc(100vh-4rem)] overflow-hidden max-w-6xl mx-auto px-4 md:px-6 py-4 md:py-6 gap-6">
+    <div className="flex h-[calc(100vh-12rem)] md:h-[calc(100vh-4rem)] overflow-hidden max-w-6xl mx-auto px-4 md:px-6 py-4 md:py-6 gap-6 relative">
+      
+      {/* Instagram-like In-App Top Notification Toast */}
+      <AnimatePresence>
+        {inAppNotification && (
+          <motion.div 
+            initial={{ opacity: 0, y: -80, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -80, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            onClick={() => {
+              const targetChat = chats.find(c => c.id === inAppNotification.chatId);
+              if (targetChat) {
+                setActiveChat(targetChat);
+                setShowChatMobile(true);
+              }
+              setInAppNotification(null);
+            }}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-[300] w-[90%] max-w-md bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center gap-3.5 shadow-[0_15px_30px_rgba(0,0,0,0.5)] cursor-pointer hover:bg-zinc-800/95 transition-all select-none"
+          >
+            <img 
+              src={inAppNotification.avatar} 
+              alt={inAppNotification.senderName} 
+              className="w-11 h-11 rounded-full object-cover border-2 border-[var(--accent-purple)]"
+            />
+            <div className="flex-1 min-w-0">
+              <span className="text-[10px] uppercase font-black tracking-widest text-[var(--accent-pink)] block mb-0.5">New Message</span>
+              <h4 className="text-sm font-extrabold text-white">@{inAppNotification.senderName}</h4>
+              <p className="text-xs text-gray-300 truncate mt-0.5">{inAppNotification.text}</p>
+            </div>
+            <div className="w-2.5 h-2.5 bg-[var(--accent-purple)] rounded-full animate-pulse shrink-0" />
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Sidebar: Chats List */}
       <div className={`w-full md:w-80 h-full flex flex-col bg-black/20 glass rounded-3xl border border-white/10 overflow-hidden shrink-0 animate-fadeIn ${
@@ -599,6 +648,29 @@ function MessagesContent() {
                 )}
               </div>
             </div>
+
+            {!activeChat.isGlobal && (
+              <button 
+                onClick={() => {
+                  const key = `mute_chat_${activeChat.id}`;
+                  const currentlyMuted = localStorage.getItem(key) === 'true';
+                  localStorage.setItem(key, String(!currentlyMuted));
+                  setMuteUpdateTrigger(prev => !prev);
+                }}
+                className={`p-2.5 hover:bg-white/10 rounded-xl transition-all ${
+                  localStorage.getItem(`mute_chat_${activeChat.id}`) === 'true' 
+                    ? 'text-red-400 bg-red-500/10 border border-red-500/20' 
+                    : 'text-gray-400 hover:text-white border border-white/5 bg-white/5'
+                }`}
+                title={localStorage.getItem(`mute_chat_${activeChat.id}`) === 'true' ? "Unmute Notifications" : "Mute Notifications"}
+              >
+                {localStorage.getItem(`mute_chat_${activeChat.id}`) === 'true' ? (
+                  <BellOff className="w-4 h-4" />
+                ) : (
+                  <Bell className="w-4 h-4" />
+                )}
+              </button>
+            )}
           </div>
         </div>
 
@@ -845,7 +917,29 @@ function MessagesContent() {
                       </div>
                     );
                   })}
+              </div>
+            </div>
+
+              {/* Mute toggle for group */}
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/5 mb-6 select-none">
+                <div className="flex items-center gap-2">
+                  {localStorage.getItem(`mute_chat_${activeGroupDetails._id}`) === 'true' ? (
+                    <BellOff className="w-4 h-4 text-red-400" />
+                  ) : (
+                    <Bell className="w-4 h-4 text-[var(--accent-purple)]" />
+                  )}
+                  <span className="text-xs font-bold text-gray-300">Mute Group Notifications</span>
                 </div>
+                <input 
+                  type="checkbox"
+                  checked={localStorage.getItem(`mute_chat_${activeGroupDetails._id}`) === 'true'}
+                  onChange={(e) => {
+                    const key = `mute_chat_${activeGroupDetails._id}`;
+                    localStorage.setItem(key, String(e.target.checked));
+                    setMuteUpdateTrigger(prev => !prev);
+                  }}
+                  className="w-4 h-4 rounded border-gray-600 bg-zinc-800 text-[var(--accent-purple)] focus:ring-[var(--accent-purple)] accent-purple-500 cursor-pointer"
+                />
               </div>
 
               <div className="flex gap-3">

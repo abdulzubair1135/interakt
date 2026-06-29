@@ -9,6 +9,28 @@ import PostCard from '@/components/ui/PostCard';
 import FollowListModal from '@/components/ui/FollowListModal';
 import { useAuth } from '@/components/providers/AuthProvider';
 
+const PRESET_AVATARS = [
+  { name: 'Male Blonde', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack&topColor=e5c158' },
+  { name: 'Male Dark', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver&topColor=2c1a04' },
+  { name: 'Male Curly', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=George&top=frizzle&topColor=black' },
+  { name: 'Male Dreads', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Milo&top=dreads&topColor=724124' },
+  { name: 'Female Brunette', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sophia&top=longHair&topColor=4a3728' },
+  { name: 'Female Ginger', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bella&top=curly&topColor=e98039' },
+  { name: 'Female Long Black', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe&top=straight02&topColor=black' },
+  { name: 'Female Pink Bob', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka&top=bob&topColor=ff4081' }
+];
+
+const PRESET_COVERS = [
+  { name: 'Forest Nature', url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&auto=format&fit=crop' },
+  { name: 'Space Earth', url: 'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=800&auto=format&fit=crop' },
+  { name: 'Sun Golden Hour', url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop' },
+  { name: 'Mystic Moon', url: 'https://images.unsplash.com/photo-1532798369041-b33eb576ef16?w=800&auto=format&fit=crop' },
+  { name: 'Dream Mind Abstract', url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop' },
+  { name: 'Black & White Cyberpunk', url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop' },
+  { name: 'Foggy Mountains', url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&auto=format&fit=crop' },
+  { name: 'Stars Nebula', url: 'https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?w=800&auto=format&fit=crop' }
+];
+
 export default function Profile() {
   const router = useRouter();
   const { user } = useAuth();
@@ -376,24 +398,61 @@ export default function Profile() {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 block">Avatar URL</label>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Choose Premium Avatar Preset</label>
+                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 mb-3 p-2 bg-white/5 border border-white/10 rounded-2xl">
+                    {PRESET_AVATARS.map((av, idx) => {
+                      const isSelected = editForm.avatar === av.url;
+                      return (
+                        <div 
+                          key={idx}
+                          onClick={() => setEditForm({ ...editForm, avatar: av.url })}
+                          className={`aspect-square rounded-xl overflow-hidden cursor-pointer border-2 transition-all hover:scale-105 active:scale-95 flex items-center justify-center bg-zinc-800 ${
+                            isSelected ? 'border-[var(--accent-purple)] scale-105 shadow-[0_0_10px_rgba(139,92,246,0.5)]' : 'border-transparent opacity-70 hover:opacity-100'
+                          }`}
+                          title={av.name}
+                        >
+                          <img src={av.url} alt={av.name} className="w-full h-full object-cover" />
+                        </div>
+                      );
+                    })}
+                  </div>
                   <input 
                     type="text" 
                     value={editForm.avatar}
                     onChange={(e) => setEditForm({...editForm, avatar: e.target.value})}
-                    placeholder="https://..."
-                    className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:border-purple-500/50"
+                    placeholder="Or enter custom Avatar URL..."
+                    className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-xs text-white outline-none focus:border-purple-500/50"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 block">Cover Image URL</label>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Choose Mood Cover Image Preset</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3 p-2 bg-white/5 border border-white/10 rounded-2xl">
+                    {PRESET_COVERS.map((cov, idx) => {
+                      const isSelected = editForm.coverImage === cov.url;
+                      return (
+                        <div 
+                          key={idx}
+                          onClick={() => setEditForm({ ...editForm, coverImage: cov.url })}
+                          className={`h-12 rounded-xl overflow-hidden cursor-pointer border-2 transition-all relative group hover:scale-[1.02] active:scale-95 ${
+                            isSelected ? 'border-[var(--accent-purple)] scale-[1.02] shadow-[0_0_10px_rgba(139,92,246,0.5)]' : 'border-transparent opacity-70 hover:opacity-100'
+                          }`}
+                          title={cov.name}
+                        >
+                          <img src={cov.url} alt={cov.name} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-[8px] font-bold text-white uppercase tracking-wider">{cov.name.split(' ')[0]}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                   <input 
                     type="text" 
                     value={editForm.coverImage}
                     onChange={(e) => setEditForm({...editForm, coverImage: e.target.value})}
-                    placeholder="https://..."
-                    className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:border-purple-500/50"
+                    placeholder="Or enter custom Cover Image URL..."
+                    className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-xs text-white outline-none focus:border-purple-500/50"
                   />
                 </div>
 

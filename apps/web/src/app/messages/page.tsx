@@ -172,7 +172,7 @@ function MessagesContent() {
         if (shouldAlert) {
           playNotificationSound();
           
-          if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
+          if ('Notification' in window && Notification.permission === 'granted') {
             new Notification(`Message from @${message.sender?.username || 'User'}`, {
               body: message.text,
               icon: '/logo.jpg'
@@ -644,15 +644,15 @@ function MessagesContent() {
                     )}
                     <p className="text-sm font-medium leading-relaxed break-words">{renderCensoredText(msg.text)}</p>
                     <div className="flex items-center justify-end gap-1 mt-1 select-none">
-                      <span className="text-[9px] opacity-60 font-mono">{msg.time}</span>
+                      <span className="text-[9px] opacity-75 font-mono">{msg.time}</span>
                       {isMe && (
                         msg.viewedByUsers && msg.viewedByUsers.length > 0 ? (
                           <span title={`Seen by: ${msg.viewedByUsers.map((u: any) => `@${u.username}`).join(', ')}`}>
-                            <Eye className="w-3.5 h-3.5 text-purple-400 drop-shadow-[0_0_3px_rgba(168,85,247,0.4)]" />
+                            <Eye className="w-4 h-4 text-fuchsia-400 stroke-[2.5px] drop-shadow-[0_0_5px_rgba(240,79,207,0.7)]" />
                           </span>
                         ) : (
                           <span title="Unseen">
-                            <Eye className="w-3.5 h-3.5 text-gray-500 opacity-30" />
+                            <Eye className="w-4 h-4 text-gray-400 stroke-[2px] opacity-70" />
                           </span>
                         )
                       )}

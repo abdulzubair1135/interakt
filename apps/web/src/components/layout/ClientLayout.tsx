@@ -43,60 +43,9 @@ export default function ClientLayout({
     };
   }, [leftOpen, rightOpen]);
 
-  // Z-Plus Hacker/Inspect Prevention & Tracking
+  // Z-Plus Hacker/Inspect Prevention & Tracking (TEMPORARILY DISABLED FOR DEBUGGING)
   useState(() => {
-    if (typeof window === "undefined") return;
-    
-    const handleInspect = async (method: string) => {
-      let username = "Guest";
-      try {
-        const token = localStorage.getItem("campushub_token");
-        if (token) {
-          const payload = JSON.parse(atob(token.split(".")[1]));
-          username = payload.username || payload.id || "Logged In User";
-        }
-      } catch (e) {}
-
-      const axios = require("axios");
-      axios.post("https://interakt-api.onrender.com/api/auth/log-inspect", {
-        username,
-        details: `Inspect attempt detected via: ${method}`
-      }).catch(() => {});
-
-      alert("⚠️ SECURITY WARNING: Inspecting or debugging this application is strictly prohibited! Your IP, location, and device details have been logged and reported to the Administrator.");
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const isF12 = e.keyCode === 123;
-      const isInspectShortcut = e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67);
-      const isMacInspect = e.metaKey && e.altKey && e.keyCode === 73;
-      
-      if (isF12 || isInspectShortcut || isMacInspect) {
-        e.preventDefault();
-        handleInspect("Keyboard shortcut (" + (isF12 ? "F12" : "Inspect Menu Combo") + ")");
-      }
-    };
-
-    let resizeThreshold = 250;
-    const handleResize = () => {
-      // Ignore mobile devices entirely for resize detection to prevent keyboard triggering it
-      if (window.innerWidth <= 768) return;
-
-      const widthDiff = window.outerWidth - window.innerWidth;
-      const heightDiff = window.outerHeight - window.innerHeight;
-      
-      if (widthDiff > resizeThreshold || heightDiff > resizeThreshold) {
-        handleInspect("DevTools window resize detection");
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("resize", handleResize);
-    };
+    return;
   });
 
   return (

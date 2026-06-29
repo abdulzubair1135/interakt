@@ -2,18 +2,17 @@
 
 import { Search, Send, Image as ImageIcon, MoreVertical, Phone, Video, Loader2, Users, Plus, X, Search as SearchIcon, MessageSquare, ArrowLeft, Trash2, Flag, Crown, Eye, ShieldAlert, Bell, BellOff } from 'lucide-react';
 import { useState, useEffect, useRef, Suspense } from 'react';
-import io from 'socket.io-client';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { renderCensoredText } from '@/components/ui/profanityHelper';
 import { playNotificationSound } from '@/components/ui/notificationHelper';
-
-let socket: any;
+import { useSocket } from '@/components/providers/SocketProvider';
 
 function MessagesContent() {
   const searchParams = useSearchParams();
   const userIdFromQuery = searchParams.get('user');
+  const { socket, activeChatId, setActiveChatId, unreadCounts, clearUnreadCount } = useSocket();
 
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');
@@ -37,7 +36,6 @@ function MessagesContent() {
   const [showGroupDetailsModal, setShowGroupDetailsModal] = useState(false);
   const [activeGroupDetails, setActiveGroupDetails] = useState<any>(null);
   const [adminWarningMsg, setAdminWarningMsg] = useState<string | null>(null);
-  const [inAppNotification, setInAppNotification] = useState<{ senderName: string, avatar: string, text: string, chatId: string } | null>(null);
   const [muteUpdateTrigger, setMuteUpdateTrigger] = useState(false);
   const isTypingRef = useRef(false);
   
@@ -48,10 +46,6 @@ function MessagesContent() {
   }, [messages]);
 
   useEffect(() => {
-    const token = localStorage.getItem('campushub_token');
-    socket = io('https://interakt-api.onrender.com', {
-      auth: { token }
-    });
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('campushub_token');
@@ -114,11 +108,13 @@ function MessagesContent() {
     };
 
     fetchData();
-
-    return () => {
-      socket.disconnect();
-    };
   }, []);
+
+  useEffect(() => {
+    const roomId = activeChat.id === 'global' ? 'global' : activeChat.id;
+    setActiveChatId(roomId);
+    clearUnreadCount(roomId);
+  }, [activeChat.id]);
 
   useEffect(() => {
     if (!socket) return;
@@ -154,46 +150,6 @@ function MessagesContent() {
         // Emit read receipt for the newly received message if it is currently active
         if (currentUser && activeChat.id !== 'global') {
           socket.emit('read_message', { chatId: activeChat.id, userId: currentUser._id });
-        }
-      }
-
-      const isMe = currentUser && (message.sender?._id === currentUser._id || message.sender === currentUser._id);
-      if (!isMe) {
-        const isGlobal = message.chatId === 'global_room' || message.isGlobal;
-        const isGroup = message.group || message.chatId.startsWith('group_') || (chats.find(c => c.id === message.chatId)?.isGroup);
-
-        const isChatMuted = localStorage.getItem(`mute_chat_${message.chatId}`) === 'true';
-
-        let shouldAlert = !isChatMuted;
-        if (isGlobal) {
-          shouldAlert = false; // Never notify for global room chat spam
-        } else if (isGroup) {
-          shouldAlert = shouldAlert && localStorage.getItem('interakt_group_notifs') !== 'false';
-        } else {
-          shouldAlert = shouldAlert && localStorage.getItem('interakt_personal_notifs') !== 'false';
-        }
-
-        if (shouldAlert) {
-          playNotificationSound();
-          
-          if (!document.hidden) {
-            setInAppNotification({
-              senderName: message.sender?.username || 'User',
-              avatar: message.sender?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${message.sender?._id}`,
-              text: message.text,
-              chatId: message.chatId
-            });
-            setTimeout(() => {
-              setInAppNotification(prev => prev?.chatId === message.chatId ? null : prev);
-            }, 4000);
-          } else {
-            if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification(`Message from @${message.sender?.username || 'User'}`, {
-                body: message.text,
-                icon: '/logo.jpg'
-              });
-            }
-          }
         }
       }
 
@@ -349,7 +305,7 @@ function MessagesContent() {
 
   const handleSendMessage = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!inputText.trim() || !currentUser) return;
+    if (!inputText.trim() || !currentUser || !socket) return;
 
     // Reset typing status on send
     if (socket) {
@@ -507,38 +463,6 @@ function MessagesContent() {
   return (
     <div className="flex h-[calc(100vh-10rem)] md:h-[calc(100vh-4.5rem)] overflow-hidden w-full max-w-none px-2 md:px-4 py-2 md:py-3 gap-4 md:gap-6 relative">
       
-      {/* Instagram-like In-App Top Notification Toast */}
-      <AnimatePresence>
-        {inAppNotification && (
-          <motion.div 
-            initial={{ opacity: 0, y: -80, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -80, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            onClick={() => {
-              const targetChat = chats.find(c => c.id === inAppNotification.chatId);
-              if (targetChat) {
-                setActiveChat(targetChat);
-                setShowChatMobile(true);
-              }
-              setInAppNotification(null);
-            }}
-            className="fixed top-6 left-1/2 -translate-x-1/2 z-[300] w-[90%] max-w-md bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center gap-3.5 shadow-[0_15px_30px_rgba(0,0,0,0.5)] cursor-pointer hover:bg-zinc-800/95 transition-all select-none"
-          >
-            <img 
-              src={inAppNotification.avatar} 
-              alt={inAppNotification.senderName} 
-              className="w-11 h-11 rounded-full object-cover border-2 border-[var(--accent-purple)]"
-            />
-            <div className="flex-1 min-w-0">
-              <span className="text-[10px] uppercase font-black tracking-widest text-[var(--accent-pink)] block mb-0.5">New Message</span>
-              <h4 className="text-sm font-extrabold text-white">@{inAppNotification.senderName}</h4>
-              <p className="text-xs text-gray-300 truncate mt-0.5">{inAppNotification.text}</p>
-            </div>
-            <div className="w-2.5 h-2.5 bg-[var(--accent-purple)] rounded-full animate-pulse shrink-0" />
-          </motion.div>
-        )}
-      </AnimatePresence>
       
       {/* Sidebar: Chats List */}
       <div className={`w-full md:w-96 h-full flex flex-col bg-black/20 glass rounded-3xl border border-white/10 overflow-hidden shrink-0 animate-fadeIn ${
@@ -588,9 +512,23 @@ function MessagesContent() {
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline mb-0.5">
                     <h3 className="font-bold text-sm text-white truncate">{chat.name}</h3>
-                    <span className="text-[9px] text-gray-500 shrink-0">{chat.time}</span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-[9px] text-gray-500">{chat.time}</span>
+                      {unreadCounts[chat.id] > 0 && (
+                        <span className="w-2 h-2 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse" title={`${unreadCounts[chat.id]} unread`} />
+                      )}
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-400 truncate">{chat.lastMessage || 'Open chat to message'}</p>
+                  <div className="flex justify-between items-center gap-2">
+                    <p className={`text-xs truncate flex-1 ${unreadCounts[chat.id] > 0 ? 'text-white font-extrabold' : 'text-gray-400'}`}>
+                      {chat.lastMessage || 'Open chat to message'}
+                    </p>
+                    {unreadCounts[chat.id] > 0 && (
+                      <span className="bg-gradient-to-tr from-red-500 to-pink-500 text-white rounded-full min-w-[16px] h-4 flex items-center justify-center text-[9px] font-black scale-90 px-1 shadow-sm shadow-red-500/20">
+                        {unreadCounts[chat.id] > 5 ? '5+' : unreadCounts[chat.id]}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             );

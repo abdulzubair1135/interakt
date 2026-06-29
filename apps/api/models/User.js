@@ -18,6 +18,7 @@ const UserSchema = new mongoose.Schema({
   isPrivate: { type: Boolean, default: false },
   isBanned: { type: Boolean, default: false },
   bannedUntil: { type: String, default: null },
+  profileViews: { type: Number, default: 0 },
   lastLogin: { type: Date, default: Date.now },
   followers: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
   following: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],

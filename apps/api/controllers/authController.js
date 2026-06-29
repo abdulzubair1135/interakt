@@ -365,6 +365,11 @@ exports.getUserProfile = async (req, res) => {
 
     const currentUserId = req.user ? req.user.id : null;
 
+    if (!currentUserId || currentUserId !== req.params.id) {
+      user.profileViews = (user.profileViews || 0) + 1;
+      await user.save();
+    }
+
     if (currentUserId) {
       const isBlocked = await Block.findOne({
         $or: [
@@ -1032,6 +1037,57 @@ exports.getBlockedUsers = async (req, res) => {
     const blocks = await Block.find({ blocker: blockerId }).populate('blocked', 'username name avatar').lean();
     const blockedUsers = blocks.map(b => b.blocked).filter(Boolean);
     res.status(200).json({ success: true, data: blockedUsers });
+  } catch (err) {
+    res.status(400).json({ success: false, error: safeErrorMessage(err) });
+  }
+};
+
+exports.getUserAnalytics = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    // Calculate Engagement Rate
+    const Post = require('../models/Post');
+    const userPosts = await Post.find({ user: userId });
+    let totalLikes = 0;
+    let totalComments = 0;
+    userPosts.forEach(p => {
+      totalLikes += (p.likes || []).length;
+      totalComments += (p.comments || []).length;
+    });
+    const totalEngagement = totalLikes + totalComments;
+    const followersCount = (user.followers || []).length;
+    
+    const engagementRate = followersCount > 0 
+      ? ((totalEngagement / followersCount) * 100).toFixed(1)
+      : (totalEngagement * 10).toFixed(1);
+
+    // Calculate Creator Rank (Percentile among all users)
+    const totalUsersCount = await User.countDocuments();
+    const higherFollowerUsers = await User.countDocuments({
+      $expr: { $gt: [{ $size: "$followers" }, followersCount] }
+    });
+    const percentile = totalUsersCount > 1 
+      ? (higherFollowerUsers / totalUsersCount) * 100 
+      : 0;
+
+    let creatorRank = 'Top 50%';
+    if (percentile <= 1) creatorRank = 'Top 1%';
+    else if (percentile <= 5) creatorRank = 'Top 5%';
+    else if (percentile <= 10) creatorRank = 'Top 10%';
+    else if (percentile <= 25) creatorRank = 'Top 25%';
+
+    res.status(200).json({
+      success: true,
+      data: {
+        profileViews: user.profileViews || 0,
+        engagementRate: `${engagementRate}%`,
+        followersCount,
+        creatorRank
+      }
+    });
   } catch (err) {
     res.status(400).json({ success: false, error: safeErrorMessage(err) });
   }

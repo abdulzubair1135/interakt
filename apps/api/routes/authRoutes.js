@@ -5,7 +5,7 @@ const {
   getFollowingUsers, setPremium, togglePrivate, getNotifications, 
   markNotificationsRead, getFollowers, getFollowing,
   forgotPassword, verifyResetOtp, getActiveAds, trackAdClick, logInspectAttempt,
-  blockUser, unblockUser, getBlockedUsers
+  blockUser, unblockUser, getBlockedUsers, getUserAnalytics
 } = require('../controllers/authController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -27,6 +27,7 @@ router.post('/forgot-password', authLimiter, forgotPassword);
 router.post('/verify-reset-otp', authLimiter, verifyResetOtp);
 router.get('/me', protect, getMe);
 router.get('/profile/:id', getUserProfile);
+router.get('/profile/:id/analytics', protect, getUserAnalytics);
 router.get('/profile/:id/followers', getFollowers);
 router.get('/profile/:id/following', getFollowing);
 router.post('/setup-admin', protect, setupAdmin);

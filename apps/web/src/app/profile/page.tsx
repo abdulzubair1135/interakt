@@ -34,6 +34,7 @@ export default function Profile() {
     coverImage: ''
   });
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [analytics, setAnalytics] = useState<any>(null);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -58,6 +59,17 @@ export default function Profile() {
           avatar: userData.avatar || '',
           coverImage: userData.coverImage || ''
         });
+
+        if (userData.isPremium) {
+          try {
+            const analyticsRes = await axios.get(`https://interakt-api.onrender.com/api/auth/profile/${userData._id}/analytics`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            setAnalytics(analyticsRes.data.data);
+          } catch (e) {
+            console.error('Failed to fetch user analytics', e);
+          }
+        }
 
         setPostsLoading(true);
         let postsUrl = `https://interakt-api.onrender.com/api/posts/user/${userData._id}`;
@@ -204,19 +216,19 @@ export default function Profile() {
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
             <div className="bg-black/20 rounded-xl p-4 border border-yellow-500/10 text-center">
-              <p className="text-3xl font-black text-white">{Math.floor(Math.random() * 500) + 124}</p>
+              <p className="text-3xl font-black text-white">{analytics ? analytics.profileViews : '0'}</p>
               <p className="text-[10px] text-yellow-500/80 uppercase tracking-widest font-bold mt-1">Profile Views</p>
             </div>
             <div className="bg-black/20 rounded-xl p-4 border border-yellow-500/10 text-center">
-              <p className="text-3xl font-black text-white">+{(Math.random() * 20 + 5).toFixed(1)}%</p>
+              <p className="text-3xl font-black text-white">{analytics ? analytics.engagementRate : '0.0%'}</p>
               <p className="text-[10px] text-yellow-500/80 uppercase tracking-widest font-bold mt-1">Engagement</p>
             </div>
             <div className="bg-black/20 rounded-xl p-4 border border-yellow-500/10 text-center">
-              <p className="text-3xl font-black text-white">{profile.followers?.length || 0}</p>
+              <p className="text-3xl font-black text-white">{analytics ? analytics.followersCount : (profile.followers?.length || 0)}</p>
               <p className="text-[10px] text-yellow-500/80 uppercase tracking-widest font-bold mt-1">Total Followers</p>
             </div>
             <div className="bg-black/20 rounded-xl p-4 border border-yellow-500/10 text-center">
-              <p className="text-3xl font-black text-white">Top 5%</p>
+              <p className="text-3xl font-black text-white">{analytics ? analytics.creatorRank : 'Top 50%'}</p>
               <p className="text-[10px] text-yellow-500/80 uppercase tracking-widest font-bold mt-1">Creator Rank</p>
             </div>
           </div>

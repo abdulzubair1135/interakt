@@ -16,6 +16,7 @@ export default function ClientLayout({
 }) {
   const pathname = usePathname();
   const isAuthRoute = pathname === "/login" || pathname === "/register";
+  const isMessagesRoute = pathname === "/messages";
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
 
@@ -148,7 +149,7 @@ export default function ClientLayout({
             />
             
             {/* ── Main Content ── */}
-            <main className="w-full lg:ml-64 lg:mr-80 min-h-screen pt-14 lg:pt-0 pb-24 lg:pb-0">
+            <main className={`w-full lg:ml-64 ${isMessagesRoute ? 'lg:mr-0' : 'lg:mr-80'} min-h-screen pt-14 lg:pt-0 pb-24 lg:pb-0`}>
               {children}
             </main>
             

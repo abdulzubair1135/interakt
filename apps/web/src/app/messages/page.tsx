@@ -9,10 +9,24 @@ import { renderCensoredText } from '@/components/ui/profanityHelper';
 import { playNotificationSound } from '@/components/ui/notificationHelper';
 import { useSocket } from '@/components/providers/SocketProvider';
 
+const CHAT_THEMES = [
+  { id: 'midnight', name: 'Midnight Dark', className: 'bg-zinc-950/90' },
+  { id: 'cyberpunk', name: 'Cyberpunk Neon', className: 'bg-gradient-to-tr from-indigo-950 via-zinc-900 to-purple-950/90' },
+  { id: 'sunset', name: 'Sunset Warmth', className: 'bg-gradient-to-br from-rose-950 via-zinc-900 to-amber-950/90' },
+  { id: 'ocean', name: 'Ocean Depth', className: 'bg-gradient-to-tr from-cyan-950 via-zinc-900 to-blue-950/90' },
+  { id: 'forest', name: 'Teal Forest', className: 'bg-gradient-to-br from-emerald-950 via-zinc-900 to-teal-950/90' },
+];
+
 function MessagesContent() {
   const searchParams = useSearchParams();
   const userIdFromQuery = searchParams.get('user');
   const { socket, activeChatId, setActiveChatId, unreadCounts, clearUnreadCount } = useSocket();
+  const [chatTheme, setChatTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('interakt_chat_theme') || 'midnight';
+    }
+    return 'midnight';
+  });
 
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');
@@ -587,32 +601,63 @@ function MessagesContent() {
               </div>
             </div>
 
-            {!activeChat.isGlobal && (
-              <button 
-                onClick={() => {
-                  const key = `mute_chat_${activeChat.id}`;
-                  const currentlyMuted = localStorage.getItem(key) === 'true';
-                  localStorage.setItem(key, String(!currentlyMuted));
-                  setMuteUpdateTrigger(prev => !prev);
-                }}
-                className={`p-2.5 hover:bg-white/10 rounded-xl transition-all ${
-                  localStorage.getItem(`mute_chat_${activeChat.id}`) === 'true' 
-                    ? 'text-red-400 bg-red-500/10 border border-red-500/20' 
-                    : 'text-gray-400 hover:text-white border border-white/5 bg-white/5'
-                }`}
-                title={localStorage.getItem(`mute_chat_${activeChat.id}`) === 'true' ? "Unmute Notifications" : "Mute Notifications"}
-              >
-                {localStorage.getItem(`mute_chat_${activeChat.id}`) === 'true' ? (
-                  <BellOff className="w-4 h-4" />
-                ) : (
-                  <Bell className="w-4 h-4" />
-                )}
-              </button>
-            )}
+            <div className="flex items-center gap-2.5">
+              {/* Gradient Theme Circles */}
+              <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 p-1.5 rounded-full shrink-0">
+                {CHAT_THEMES.map(theme => (
+                  <button
+                    key={theme.id}
+                    type="button"
+                    onClick={() => {
+                      setChatTheme(theme.id);
+                      localStorage.setItem('interakt_chat_theme', theme.id);
+                    }}
+                    className={`w-3.5 h-3.5 rounded-full transition-all border ${
+                      chatTheme === theme.id 
+                        ? 'border-white scale-110 shadow-[0_0_5px_rgba(255,255,255,0.5)]' 
+                        : 'border-transparent opacity-60 hover:opacity-100'
+                    }`}
+                    style={{
+                      background: theme.id === 'midnight' ? '#18181b' :
+                                  theme.id === 'cyberpunk' ? 'linear-gradient(to right, #4338ca, #581c87)' :
+                                  theme.id === 'sunset' ? 'linear-gradient(to right, #9f1239, #78350f)' :
+                                  theme.id === 'ocean' ? 'linear-gradient(to right, #083344, #172554)' :
+                                  'linear-gradient(to right, #064e3b, #115e59)'
+                    }}
+                    title={theme.name}
+                  />
+                ))}
+              </div>
+
+              {!activeChat.isGlobal && (
+                <button 
+                  onClick={() => {
+                    const key = `mute_chat_${activeChat.id}`;
+                    const currentlyMuted = localStorage.getItem(key) === 'true';
+                    localStorage.setItem(key, String(!currentlyMuted));
+                    setMuteUpdateTrigger(prev => !prev);
+                  }}
+                  className={`p-2.5 hover:bg-white/10 rounded-xl transition-all ${
+                    localStorage.getItem(`mute_chat_${activeChat.id}`) === 'true' 
+                      ? 'text-red-400 bg-red-500/10 border border-red-500/20' 
+                      : 'text-gray-400 hover:text-white border border-white/5 bg-white/5'
+                  }`}
+                  title={localStorage.getItem(`mute_chat_${activeChat.id}`) === 'true' ? "Unmute Notifications" : "Mute Notifications"}
+                >
+                  {localStorage.getItem(`mute_chat_${activeChat.id}`) === 'true' ? (
+                    <BellOff className="w-4 h-4" />
+                  ) : (
+                    <Bell className="w-4 h-4" />
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin">
+        <div className={`flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin transition-all duration-500 ${
+          CHAT_THEMES.find(t => t.id === chatTheme)?.className || 'bg-zinc-950/90'
+        }`}>
           {loading ? (
             <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-purple-500" /></div>
           ) : (

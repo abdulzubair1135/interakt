@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { TrendingUp, Crown, ExternalLink, Sparkles, Zap, Trophy } from 'lucide-react';
 import { useAuth } from '../providers/AuthProvider';
 
@@ -45,6 +46,8 @@ interface RightSidebarProps {
 
 const RightSidebar = ({ isOpen, onClose, onSwitchToLeft }: RightSidebarProps) => {
   const { user } = useAuth();
+  const pathname = usePathname();
+  const isMessagesRoute = pathname === '/messages';
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -167,7 +170,7 @@ const RightSidebar = ({ isOpen, onClose, onSwitchToLeft }: RightSidebarProps) =>
         transition-transform duration-300 ease-out
         overflow-y-auto overflow-x-hidden
         overscroll-contain
-        lg:translate-x-0
+        ${isMessagesRoute ? 'lg:translate-x-full' : 'lg:translate-x-0'}
         ${isOpen ? 'translate-x-0' : 'translate-x-full'}
       `}
       style={{ WebkitOverflowScrolling: 'touch' }}

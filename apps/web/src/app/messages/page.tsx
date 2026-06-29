@@ -505,7 +505,7 @@ function MessagesContent() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-12rem)] md:h-[calc(100vh-4rem)] overflow-hidden max-w-6xl mx-auto px-4 md:px-6 py-4 md:py-6 gap-6 relative">
+    <div className="flex h-[calc(100vh-10rem)] md:h-[calc(100vh-4.5rem)] overflow-hidden w-full max-w-none px-2 md:px-4 py-2 md:py-3 gap-4 md:gap-6 relative">
       
       {/* Instagram-like In-App Top Notification Toast */}
       <AnimatePresence>
@@ -541,7 +541,7 @@ function MessagesContent() {
       </AnimatePresence>
       
       {/* Sidebar: Chats List */}
-      <div className={`w-full md:w-80 h-full flex flex-col bg-black/20 glass rounded-3xl border border-white/10 overflow-hidden shrink-0 animate-fadeIn ${
+      <div className={`w-full md:w-96 h-full flex flex-col bg-black/20 glass rounded-3xl border border-white/10 overflow-hidden shrink-0 animate-fadeIn ${
         showChatMobile ? 'hidden md:flex' : 'flex'
       }`}>
         <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/5">
